@@ -24,12 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
         cardHeight: getNum('plCardHeight'),
         margins: getNum('plPageMargins'),
         gap: getNum('plCardGaps'),
-        bleedType: document.getElementById('plBleedType').value,
-        bleedWidth: getNum('plBleedWidth'),
-        bleedColor: document.getElementById('plBleedColor').value,
-        cropMarks: document.getElementById('plCropMarks').value,
-        cropColor: document.getElementById('plCropColor').value,
-        backType: document.getElementById('plBackType').value
+        backType: document.getElementById('plBackType').value,
+        front: {
+            bleedType: document.getElementById('plFrontBleedType').value,
+            bleedWidth: getNum('plFrontBleedWidth'),
+            bleedColor: document.getElementById('plFrontBleedColor').value,
+            cropMarks: document.getElementById('plFrontCropMarks').value,
+            cropColor: document.getElementById('plFrontCropColor').value
+        },
+        back: {
+            bleedType: document.getElementById('plBackBleedType').value,
+            bleedWidth: getNum('plBackBleedWidth'),
+            bleedColor: document.getElementById('plBackBleedColor').value,
+            cropMarks: document.getElementById('plBackCropMarks').value,
+            cropColor: document.getElementById('plBackCropColor').value
+        }
     });
 
     const checkProportions = () => {
@@ -109,30 +118,28 @@ document.addEventListener('DOMContentLoaded', () => {
             [pageWidth, pageHeight] = [pageHeight, pageWidth];
         }
 
-        // scale down to fit container width, assuming container is ~400-500px wide
-        const scale = Math.min(500 / pageWidth, 800 / pageHeight); 
+        // scale down to fit container width. Make it slightly smaller so 2 pages can fit side-by-side
+        const scale = Math.min(380 / pageWidth, 600 / pageHeight); 
         
         previewContainer.innerHTML = '';
         previewContainer.style.border = 'none';
         previewContainer.style.background = '#e9ecef';
         previewContainer.style.display = 'flex';
-        previewContainer.style.flexDirection = 'column';
-        previewContainer.style.alignItems = 'center';
+        previewContainer.style.flexDirection = 'row';
+        previewContainer.style.flexWrap = 'wrap';
+        previewContainer.style.alignItems = 'flex-start';
         previewContainer.style.justifyContent = 'center';
-
-        const pageDiv = document.createElement('div');
-        pageDiv.style.width = `${pageWidth * scale}px`;
-        pageDiv.style.height = `${pageHeight * scale}px`;
-        pageDiv.style.backgroundColor = config.pageBgColor;
-        pageDiv.style.position = 'relative';
-        pageDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        pageDiv.style.overflow = 'hidden';
+        previewContainer.style.gap = '30px';
 
         const cardW = config.cardWidth;
         const cardH = config.cardHeight;
-        const bleedW = config.bleedType !== 'none' ? config.bleedWidth : 0;
-        const totalCardW = cardW + 2 * bleedW;
-        const totalCardH = cardH + 2 * bleedW;
+        
+        const frontBleedW = config.front.bleedType !== 'none' ? config.front.bleedWidth : 0;
+        const backBleedW = config.backType !== 'none' && config.back.bleedType !== 'none' ? config.back.bleedWidth : 0;
+        const maxBleedW = Math.max(frontBleedW, backBleedW);
+        
+        const totalCardW = cardW + 2 * maxBleedW;
+        const totalCardH = cardH + 2 * maxBleedW;
         const gap = config.gap;
         const margins = config.margins;
         
@@ -143,39 +150,97 @@ document.addEventListener('DOMContentLoaded', () => {
         const rows = Math.floor((usableH + gap) / (totalCardH + gap));
         
         if (cols === 0 || rows === 0) {
-            pageDiv.innerHTML = '<p style="color:red;text-align:center;margin-top:50px;font-family:sans-serif;">Card size is too large for the page</p>';
-        } else {
-            const gridW = cols * totalCardW + (cols - 1) * gap;
-            const gridH = rows * totalCardH + (rows - 1) * gap;
-            const startX = (pageWidth - gridW) / 2;
-            const startY = (pageHeight - gridH) / 2;
+            previewContainer.innerHTML = '<p style="color:red;text-align:center;margin-top:50px;font-family:sans-serif;width:100%;">Card size is too large for the page</p>';
+            return;
+        }
+
+        const gridW = cols * totalCardW + (cols - 1) * gap;
+        const gridH = rows * totalCardH + (rows - 1) * gap;
+        const startX = (pageWidth - gridW) / 2;
+        const startY = (pageHeight - gridH) / 2;
+
+        const createPage = (isBack) => {
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.style.display = 'flex';
+            wrapperDiv.style.flexDirection = 'column';
+            wrapperDiv.style.alignItems = 'center';
+            wrapperDiv.style.gap = '10px';
+
+            const title = document.createElement('h4');
+            title.innerText = isBack ? 'Page 2 (Backs)' : 'Page 1 (Fronts)';
+            title.style.margin = '0';
+            title.style.fontFamily = 'sans-serif';
+            title.style.color = '#333';
+            wrapperDiv.appendChild(title);
+
+            const pageDiv = document.createElement('div');
+            pageDiv.style.width = `${pageWidth * scale}px`;
+            pageDiv.style.height = `${pageHeight * scale}px`;
+            pageDiv.style.backgroundColor = config.pageBgColor;
+            pageDiv.style.position = 'relative';
+            pageDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            pageDiv.style.overflow = 'hidden';
 
             const maxCards = cols * rows;
             for(let i=0; i < Math.min(loadedFaces.length, maxCards); i++) {
                 const row = Math.floor(i / cols);
-                const col = i % cols;
+                let col = i % cols;
+                
+                if (isBack) {
+                    // Mirror column for back page print layout
+                    col = (cols - 1) - col; 
+                }
+
                 const x = startX + col * (totalCardW + gap);
                 const y = startY + row * (totalCardH + gap);
 
-                const cardImg = document.createElement('img');
-                cardImg.src = loadedFaces[i].img.src;
-                cardImg.style.position = 'absolute';
-                cardImg.style.left = `${x * scale}px`;
-                cardImg.style.top = `${y * scale}px`;
-                cardImg.style.width = `${totalCardW * scale}px`;
-                cardImg.style.height = `${totalCardH * scale}px`;
-                cardImg.style.objectFit = 'cover';
-                if (config.bleedType === 'frame') {
-                    cardImg.style.border = `${bleedW * scale}px solid ${config.bleedColor}`;
-                    cardImg.style.boxSizing = 'border-box';
+                let imgSrc;
+                if (isBack) {
+                    if (config.backType === 'same' && loadedBacks.length > 0) {
+                        imgSrc = loadedBacks[0].img.src;
+                    } else if (config.backType === 'different' && loadedBacks.length > 0) {
+                        imgSrc = (loadedBacks[i] || loadedBacks[0]).img.src;
+                    }
+                } else {
+                    imgSrc = loadedFaces[i].img.src;
                 }
-                cardImg.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
-                
-                pageDiv.appendChild(cardImg);
+
+                if (imgSrc) {
+                    const sideBleedType = isBack ? config.back.bleedType : config.front.bleedType;
+                    const sideBleedW = isBack ? backBleedW : frontBleedW;
+                    const sideBleedColor = isBack ? config.back.bleedColor : config.front.bleedColor;
+                    
+                    const drawW = cardW + 2 * sideBleedW;
+                    const drawH = cardH + 2 * sideBleedW;
+                    
+                    const offsetX = maxBleedW - sideBleedW;
+                    const offsetY = maxBleedW - sideBleedW;
+
+                    const cardImg = document.createElement('img');
+                    cardImg.src = imgSrc;
+                    cardImg.style.position = 'absolute';
+                    cardImg.style.left = `${(x + offsetX) * scale}px`;
+                    cardImg.style.top = `${(y + offsetY) * scale}px`;
+                    cardImg.style.width = `${drawW * scale}px`;
+                    cardImg.style.height = `${drawH * scale}px`;
+                    cardImg.style.objectFit = 'cover';
+                    if (sideBleedType === 'frame') {
+                        cardImg.style.border = `${sideBleedW * scale}px solid ${sideBleedColor}`;
+                        cardImg.style.boxSizing = 'border-box';
+                    }
+                    cardImg.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+                    pageDiv.appendChild(cardImg);
+                }
             }
+
+            wrapperDiv.appendChild(pageDiv);
+            return wrapperDiv;
+        };
+
+        previewContainer.appendChild(createPage(false)); // Front Page
+        if (config.backType !== 'none') {
+            previewContainer.appendChild(createPage(true));  // Back Page
         }
-        
-        previewContainer.appendChild(pageDiv);
     };
 
     const updateAll = () => {
@@ -188,7 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputsToWatch = [
         'plCardWidth', 'plCardHeight', 'plBackType', 'plPageSize', 
         'plOrientation', 'plPageBgColor', 'plPageMargins', 'plCardGaps', 
-        'plBleedType', 'plBleedWidth', 'plBleedColor'
+        'plFrontBleedType', 'plFrontBleedWidth', 'plFrontBleedColor',
+        'plFrontCropMarks', 'plFrontCropColor',
+        'plBackBleedType', 'plBackBleedWidth', 'plBackBleedColor',
+        'plBackCropMarks', 'plBackCropColor'
     ];
     inputsToWatch.forEach(id => {
         const el = document.getElementById(id);
@@ -206,19 +274,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Target pixels at 300 DPI (300 dots per 25.4 mm)
             const dpi = 300;
             const pxPerMm = dpi / 25.4;
-            const extraBleed = config.bleedType !== 'none' ? config.bleedWidth : 0;
+            const frontBleedW = config.front.bleedType !== 'none' ? config.front.bleedWidth : 0;
+            const backBleedW = config.backType !== 'none' && config.back.bleedType !== 'none' ? config.back.bleedWidth : 0;
             
-            const targetW_px = Math.round((config.cardWidth + 2 * extraBleed) * pxPerMm);
-            const targetH_px = Math.round((config.cardHeight + 2 * extraBleed) * pxPerMm);
-            
-            const bleedSettings = {
-                type: config.bleedType,
-                widthPx: Math.round(extraBleed * pxPerMm),
-                color: config.bleedColor
+            const processSide = (images, bleedConf, bleedW) => {
+                const targetW_px = Math.round((config.cardWidth + 2 * bleedW) * pxPerMm);
+                const targetH_px = Math.round((config.cardHeight + 2 * bleedW) * pxPerMm);
+                const settings = {
+                    type: bleedConf.bleedType,
+                    widthPx: Math.round(bleedW * pxPerMm),
+                    color: bleedConf.bleedColor
+                };
+                return images.map(img => processImageToCanvas(img, targetW_px, targetH_px, settings));
             };
 
-            const processedFaces = loadedFaces.map(img => processImageToCanvas(img, targetW_px, targetH_px, bleedSettings));
-            const processedBacks = loadedBacks.map(img => processImageToCanvas(img, targetW_px, targetH_px, bleedSettings));
+            const processedFaces = processSide(loadedFaces, config.front, frontBleedW);
+            const processedBacks = processSide(loadedBacks, config.back, backBleedW);
 
             const pdfBytes = await generatePDF(processedFaces, processedBacks, config, (msg) => {
                 status.innerText = msg;

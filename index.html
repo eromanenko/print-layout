@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,113 +10,219 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* Add some specific styles that were in the original body */
-        body { padding: 20px; }
+        body {
+            padding: 20px;
+        }
     </style>
 </head>
+
 <body>
     <h2>Print Layout Generator</h2>
-    <div id="tab-layout" class="tab-content active" style="display: flex; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
-        <div class="sidebar" style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+    <div id="tab-layout" class="tab-content active"
+        style="display: flex; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
+        <div class="sidebar"
+            style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
             <p class="instructions" id="plInstructions" style="margin: 0;">
                 <b>Print Layout Generator:</b> Upload card images to generate a ready-to-print PDF.
             </p>
 
             <div class="controls" id="plControlsContainer" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Language:</span>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Language:</span>
                     <select id="plLangSelect" style="width: 120px;">
                         <option value="en">English</option>
                         <option value="ru">Русский</option>
                         <option value="ua">Українська</option>
                     </select>
                 </label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Page Size:</span>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Page Size:</span>
                     <select id="plPageSize" style="width: 120px;">
                         <option value="A4">A4</option>
                         <option value="A3">A3</option>
                         <option value="Letter">Letter</option>
                     </select>
                 </label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Orientation:</span>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Orientation:</span>
                     <select id="plOrientation" style="width: 120px;">
                         <option value="portrait">Portrait</option>
                         <option value="landscape">landscape</option>
                     </select>
                 </label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Background:</span>
-                    <input type="color" id="plPageBgColor" value="#ffffff" style="width: 40px; height: 25px; padding: 0;">
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Background:</span>
+                    <input type="color" id="plPageBgColor" value="#ffffff"
+                        style="width: 60px; height: 25px; padding: 0;">
                 </label>
-            </div>
-            
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Card Width (mm):</span> <input type="number" id="plCardWidth" value="63" min="10" step="1" style="width: 60px;"></label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Card Height (mm):</span> <input type="number" id="plCardHeight" value="88" min="10" step="1" style="width: 60px;"></label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Page Margins (mm):</span> <input type="number" id="plPageMargins" value="5" min="0" step="1" style="width: 60px;"></label>
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Gap (mm):</span> <input type="number" id="plCardGaps" value="0" min="0" step="1" style="width: 60px;"></label>
             </div>
 
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Bleed Effect:</span>
-                    <select id="plBleedType" style="width: 120px;">
-                        <option value="none">None</option>
-                        <option value="mirror">Mirror Bleed</option>
-                        <option value="frame">Color Frame</option>
-                    </select>
-                </label>
-                <div id="plBleedSettings" style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
-                    <label class="checkbox-container" id="plBleedWidthContainer" style="display:flex; justify-content:space-between; align-items:center;"><span>Width (mm):</span> <input type="number" id="plBleedWidth" value="2" min="1" step="1" style="width: 60px;"></label>
-                    <label class="checkbox-container" id="plBleedColorContainer" style="display:none; justify-content:space-between; align-items:center;"><span>Color:</span> <input type="color" id="plBleedColor" value="#ffffff" style="width: 40px; height: 25px; padding: 0;"></label>
-                </div>
-                
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Crop Marks:</span>
-                    <select id="plCropMarks" style="width: 120px;">
-                        <option value="none">None</option>
-                        <option value="lines">Lines</option>
-                        <option value="crosses">Crosses</option>
-                    </select>
-                </label>
-                <div id="plCropSettings" style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
-                    <label class="checkbox-container" id="plCropColorContainer" style="display:flex; justify-content:space-between; align-items:center;"><span>Color:</span> <input type="color" id="plCropColor" value="#808080" style="width: 40px; height: 25px; padding: 0;"></label>
-                </div>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Card Width
+                        (mm):</span> <input type="number" id="plCardWidth" value="63" min="10" step="1"
+                        style="width: 60px;"></label>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Card Height
+                        (mm):</span> <input type="number" id="plCardHeight" value="88" min="10" step="1"
+                        style="width: 60px;"></label>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Page Margins
+                        (mm):</span> <input type="number" id="plPageMargins" value="5" min="0" step="1"
+                        style="width: 60px;"></label>
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Gap (mm):</span>
+                    <input type="number" id="plCardGaps" value="0" min="0" step="1" style="width: 60px;"></label>
             </div>
 
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center;"><span>Back Type:</span>
-                    <select id="plBackType" style="width: 150px;">
+                <label class="checkbox-container"
+                    style="display:flex; justify-content:space-between; align-items:center;"><span>Back Type:</span>
+                    <select id="plBackType" style="width: 120px;">
                         <option value="same">Same for all</option>
                         <option value="different">Different backs</option>
                         <option value="none">None</option>
                     </select>
                 </label>
             </div>
-            
+
+            <!-- Tab Buttons for Front/Back settings -->
+            <div class="controls" id="plSideTabs"
+                style="display:flex; flex-direction:column; gap:0px; padding:0; border-radius:4px; overflow:hidden; flex-shrink:0;">
+                <div style="display:flex; background:#e9ecef; border-radius:4px 4px 0 0;">
+                    <button class="pl-side-tab active" data-side="front"
+                        style="flex:1; padding:8px; border:none; background:#007bff; color:white; cursor:pointer;">Front
+                        Settings</button>
+                    <button class="pl-side-tab" id="plSideTabBackBtn" data-side="back"
+                        style="flex:1; padding:8px; border:none; background:transparent; color:#333; cursor:pointer;">Back
+                        Settings</button>
+                </div>
+
+                <!-- FRONT TAB -->
+                <div id="plSideContentFront" class="pl-side-content"
+                    style="padding: 12px; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px;">
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <label class="checkbox-container"
+                            style="display:flex; justify-content:space-between; align-items:center;"><span>Bleed
+                                Effect:</span>
+                            <select id="plFrontBleedType" style="width: 120px;">
+                                <option value="none">None</option>
+                                <option value="mirror">Mirror Bleed</option>
+                                <option value="frame">Color Frame</option>
+                            </select>
+                        </label>
+                        <div id="plFrontBleedSettings"
+                            style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
+                            <label class="checkbox-container" id="plFrontBleedWidthContainer"
+                                style="display:flex; justify-content:space-between; align-items:center;"><span>Width
+                                    (mm):</span> <input type="number" id="plFrontBleedWidth" value="2" min="1" step="1"
+                                    style="width: 60px;"></label>
+                            <label class="checkbox-container" id="plFrontBleedColorContainer"
+                                style="display:none; justify-content:space-between; align-items:center;"><span>Color:</span>
+                                <input type="color" id="plFrontBleedColor" value="#ffffff"
+                                    style="width: 60px; height: 25px; padding: 0;"></label>
+                        </div>
+
+                        <label class="checkbox-container"
+                            style="display:flex; justify-content:space-between; align-items:center;"><span>Crop
+                                Marks:</span>
+                            <select id="plFrontCropMarks" style="width: 120px;">
+                                <option value="none">None</option>
+                                <option value="lines">Lines</option>
+                                <option value="crosses">Crosses</option>
+                            </select>
+                        </label>
+                        <div id="plFrontCropSettings"
+                            style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
+                            <label class="checkbox-container" id="plFrontCropColorContainer"
+                                style="display:flex; justify-content:space-between; align-items:center;"><span>Color:</span>
+                                <input type="color" id="plFrontCropColor" value="#808080"
+                                    style="width: 60px; height: 25px; padding: 0;"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BACK TAB -->
+                <div id="plSideContentBack" class="pl-side-content"
+                    style="display:none; padding: 12px; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px;">
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <label class="checkbox-container"
+                            style="display:flex; justify-content:space-between; align-items:center;"><span>Bleed
+                                Effect:</span>
+                            <select id="plBackBleedType" style="width: 120px;">
+                                <option value="none">None</option>
+                                <option value="mirror">Mirror Bleed</option>
+                                <option value="frame">Color Frame</option>
+                            </select>
+                        </label>
+                        <div id="plBackBleedSettings"
+                            style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
+                            <label class="checkbox-container" id="plBackBleedWidthContainer"
+                                style="display:flex; justify-content:space-between; align-items:center;"><span>Width
+                                    (mm):</span> <input type="number" id="plBackBleedWidth" value="2" min="1" step="1"
+                                    style="width: 60px;"></label>
+                            <label class="checkbox-container" id="plBackBleedColorContainer"
+                                style="display:none; justify-content:space-between; align-items:center;"><span>Color:</span>
+                                <input type="color" id="plBackBleedColor" value="#ffffff"
+                                    style="width: 60px; height: 25px; padding: 0;"></label>
+                        </div>
+
+                        <label class="checkbox-container"
+                            style="display:flex; justify-content:space-between; align-items:center;"><span>Crop
+                                Marks:</span>
+                            <select id="plBackCropMarks" style="width: 120px;">
+                                <option value="none">None</option>
+                                <option value="lines">Lines</option>
+                                <option value="crosses">Crosses</option>
+                            </select>
+                        </label>
+                        <div id="plBackCropSettings"
+                            style="display:none; flex-direction:column; gap:10px; border-left: 2px solid #ddd; padding-left: 10px; margin-left: 10px;">
+                            <label class="checkbox-container" id="plBackCropColorContainer"
+                                style="display:flex; justify-content:space-between; align-items:center;"><span>Color:</span>
+                                <input type="color" id="plBackCropColor" value="#808080"
+                                    style="width: 60px; height: 25px; padding: 0;"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="controls" id="plFilesContainer" style="display:flex; flex-direction:column; gap:12px;">
-                <div id="plBackUploadContainer" style="display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>Global Back Image:</b> 
+                <div id="plBackUploadContainer"
+                    style="display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>Global Back Image:</b>
                     <input type="file" id="plBackFileInput" accept="image/*" title="Upload Back Image">
                     <span id="plBackFileCount" style="color: #666; font-size: 0.9em;"></span>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b id="plFrontsLabel">Front Images (or ZIP):</b> 
+                <div
+                    style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b id="plFrontsLabel">Front Images (or ZIP):</b>
                     <input type="file" id="plFacesFileInput" accept="image/*,.zip" multiple title="Upload Front Images">
                     <span id="plFacesFileCount" style="color: #666; font-size: 0.9em;"></span>
                 </div>
-                <div id="plWarning" style="color: #d9534f; font-weight: bold; font-size: 0.9em; display: none; padding: 5px 10px; background: #fdf2f2; border: 1px solid #ebccd1; border-radius: 4px;">
+                <div id="plWarning"
+                    style="color: #d9534f; font-weight: bold; font-size: 0.9em; display: none; padding: 5px 10px; background: #fdf2f2; border: 1px solid #ebccd1; border-radius: 4px;">
                     ⚠️ Warning: Image proportions mismatch. Images will be stretched.
                 </div>
             </div>
 
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <button id="plGenerateBtn" style="font-size: 1.1em; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;" disabled>Generate PDF</button>
+                <button id="plGenerateBtn"
+                    style="font-size: 1.1em; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                    disabled>Generate PDF</button>
                 <span id="plStatus" style="font-weight: bold; text-align: center;"></span>
             </div>
         </div>
-        
-        <div class="main-content" style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box;">
-            <div id="plPreviewContainer" style="text-align: center; color: #666; padding: 40px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; min-height: 400px; flex-direction: column;">
+
+        <div class="main-content"
+            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box;">
+            <div id="plPreviewContainer"
+                style="text-align: center; color: #666; padding: 40px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; min-height: 400px; flex-direction: column;">
                 <p>Upload images to generate PDF</p>
             </div>
         </div>
     </div>
     <script type="module" src="js/layout/index.js"></script>
 </body>
+
 </html>

@@ -18,9 +18,13 @@ export async function generatePDF(faces, backs, config, statusCallback) {
     
     const cardW = config.cardWidth;
     const cardH = config.cardHeight;
-    const bleedW = config.bleedType !== 'none' ? config.bleedWidth : 0;
-    const totalCardW = cardW + 2 * bleedW;
-    const totalCardH = cardH + 2 * bleedW;
+    
+    const frontBleedW = config.front.bleedType !== 'none' ? config.front.bleedWidth : 0;
+    const backBleedW = config.backType !== 'none' && config.back.bleedType !== 'none' ? config.back.bleedWidth : 0;
+    const maxBleedW = Math.max(frontBleedW, backBleedW);
+    
+    const totalCardW = cardW + 2 * maxBleedW;
+    const totalCardH = cardH + 2 * maxBleedW;
     
     const gap = config.gap;
     const margins = config.margins;
@@ -52,35 +56,53 @@ export async function generatePDF(faces, backs, config, statusCallback) {
     };
 
     const bgColor = hexToRgb(config.pageBgColor);
-    const cropColor = hexToRgb(config.cropColor);
 
-    const drawCropMarks = (page) => {
-        if (config.cropMarks === 'none') return;
+    const drawCropMarks = (page, isBack) => {
+        const sideConfig = isBack ? config.back : config.front;
+        if (sideConfig.cropMarks === 'none') return;
         
         const pt = (mm) => mm * MM_TO_PT;
         const lineLen = 3; 
-        const offset = 0; 
+        const cropColor = hexToRgb(sideConfig.cropColor);
         
-        for (let r = 0; r <= rows; r++) {
-            const y = startY + r * totalCardH + (r > 0 ? (r - 1) * gap + gap : 0);
-            const pdfY = pt(pageHeight - y);
-            for (let c = 0; c <= cols; c++) {
-                const x = startX + c * totalCardW + (c > 0 ? (c - 1) * gap + gap : 0);
-                const pdfX = pt(x);
-                
-                if (config.cropMarks === 'lines') {
-                    if (r === 0 || r === rows) {
-                        page.drawLine({ start: { x: pdfX, y: pt(pageHeight) }, end: { x: pdfX, y: 0 }, thickness: 0.5, color: cropColor, opacity: 0.3 });
-                    }
-                    if (c === 0 || c === cols) {
-                        page.drawLine({ start: { x: 0, y: pdfY }, end: { x: pt(pageWidth), y: pdfY }, thickness: 0.5, color: cropColor, opacity: 0.3 });
-                    }
-                } else if (config.cropMarks === 'crosses') {
-                    page.drawLine({ start: { x: pdfX - pt(offset+lineLen), y: pdfY }, end: { x: pdfX - pt(offset), y: pdfY }, thickness: 0.5, color: cropColor });
-                    page.drawLine({ start: { x: pdfX + pt(offset), y: pdfY }, end: { x: pdfX + pt(offset+lineLen), y: pdfY }, thickness: 0.5, color: cropColor });
-                    
-                    page.drawLine({ start: { x: pdfX, y: pdfY - pt(offset+lineLen) }, end: { x: pdfX, y: pdfY - pt(offset) }, thickness: 0.5, color: cropColor });
-                    page.drawLine({ start: { x: pdfX, y: pdfY + pt(offset) }, end: { x: pdfX, y: pdfY + pt(offset+lineLen) }, thickness: 0.5, color: cropColor });
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cellX = startX + col * (totalCardW + gap);
+                const cellY = startY + row * (totalCardH + gap);
+
+                // Trim box bounds
+                const left = cellX + maxBleedW;
+                const right = cellX + totalCardW - maxBleedW;
+                const top = cellY + maxBleedW;
+                const bottom = cellY + totalCardH - maxBleedW;
+
+                const pdfTop = pt(pageHeight - top);
+                const pdfBottom = pt(pageHeight - bottom);
+                const pdfLeft = pt(left);
+                const pdfRight = pt(right);
+
+                if (sideConfig.cropMarks === 'lines') {
+                    // Top Left
+                    page.drawLine({ start: { x: pdfLeft, y: pdfTop + pt(1) }, end: { x: pdfLeft, y: pdfTop + pt(1 + lineLen) }, thickness: 0.5, color: cropColor });
+                    page.drawLine({ start: { x: pdfLeft - pt(1), y: pdfTop }, end: { x: pdfLeft - pt(1 + lineLen), y: pdfTop }, thickness: 0.5, color: cropColor });
+                    // Top Right
+                    page.drawLine({ start: { x: pdfRight, y: pdfTop + pt(1) }, end: { x: pdfRight, y: pdfTop + pt(1 + lineLen) }, thickness: 0.5, color: cropColor });
+                    page.drawLine({ start: { x: pdfRight + pt(1), y: pdfTop }, end: { x: pdfRight + pt(1 + lineLen), y: pdfTop }, thickness: 0.5, color: cropColor });
+                    // Bottom Left
+                    page.drawLine({ start: { x: pdfLeft, y: pdfBottom - pt(1) }, end: { x: pdfLeft, y: pdfBottom - pt(1 + lineLen) }, thickness: 0.5, color: cropColor });
+                    page.drawLine({ start: { x: pdfLeft - pt(1), y: pdfBottom }, end: { x: pdfLeft - pt(1 + lineLen), y: pdfBottom }, thickness: 0.5, color: cropColor });
+                    // Bottom Right
+                    page.drawLine({ start: { x: pdfRight, y: pdfBottom - pt(1) }, end: { x: pdfRight, y: pdfBottom - pt(1 + lineLen) }, thickness: 0.5, color: cropColor });
+                    page.drawLine({ start: { x: pdfRight + pt(1), y: pdfBottom }, end: { x: pdfRight + pt(1 + lineLen), y: pdfBottom }, thickness: 0.5, color: cropColor });
+                } else if (sideConfig.cropMarks === 'crosses') {
+                    const corners = [
+                        {x: pdfLeft, y: pdfTop}, {x: pdfRight, y: pdfTop},
+                        {x: pdfLeft, y: pdfBottom}, {x: pdfRight, y: pdfBottom}
+                    ];
+                    corners.forEach(c => {
+                        page.drawLine({ start: { x: c.x - pt(lineLen), y: c.y }, end: { x: c.x + pt(lineLen), y: c.y }, thickness: 0.5, color: cropColor });
+                        page.drawLine({ start: { x: c.x, y: c.y - pt(lineLen) }, end: { x: c.x, y: c.y + pt(lineLen) }, thickness: 0.5, color: cropColor });
+                    });
                 }
             }
         }
@@ -108,15 +130,20 @@ export async function generatePDF(faces, backs, config, statusCallback) {
             const imgBase64 = faces[i];
             const pdfImage = await pdfDoc.embedJpg(imgBase64);
             
+            const drawW = cardW + 2 * frontBleedW;
+            const drawH = cardH + 2 * frontBleedW;
+            const offsetX = maxBleedW - frontBleedW;
+            const offsetY = maxBleedW - frontBleedW;
+
             frontPage.drawImage(pdfImage, {
-                x: x * MM_TO_PT,
-                y: (pageHeight - y - totalCardH) * MM_TO_PT,
-                width: totalCardW * MM_TO_PT,
-                height: totalCardH * MM_TO_PT
+                x: (x + offsetX) * MM_TO_PT,
+                y: (pageHeight - (y + offsetY) - drawH) * MM_TO_PT,
+                width: drawW * MM_TO_PT,
+                height: drawH * MM_TO_PT
             });
         }
         
-        drawCropMarks(frontPage);
+        drawCropMarks(frontPage, false);
         
         if (config.backType !== 'none') {
             statusCallback(`Generating page ${p*2 + 2} (Backs)`);
@@ -140,15 +167,21 @@ export async function generatePDF(faces, backs, config, statusCallback) {
                 
                 if (backImgBase64) {
                     const pdfImage = await pdfDoc.embedJpg(backImgBase64);
+                    
+                    const drawW = cardW + 2 * backBleedW;
+                    const drawH = cardH + 2 * backBleedW;
+                    const offsetX = maxBleedW - backBleedW;
+                    const offsetY = maxBleedW - backBleedW;
+
                     backPage.drawImage(pdfImage, {
-                        x: x * MM_TO_PT,
-                        y: (pageHeight - y - totalCardH) * MM_TO_PT,
-                        width: totalCardW * MM_TO_PT,
-                        height: totalCardH * MM_TO_PT
+                        x: (x + offsetX) * MM_TO_PT,
+                        y: (pageHeight - (y + offsetY) - drawH) * MM_TO_PT,
+                        width: drawW * MM_TO_PT,
+                        height: drawH * MM_TO_PT
                     });
                 }
             }
-            drawCropMarks(backPage);
+            drawCropMarks(backPage, true);
         }
         await new Promise(r => setTimeout(r, 10));
     }
