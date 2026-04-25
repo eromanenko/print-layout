@@ -59,41 +59,47 @@ document.addEventListener('DOMContentLoaded', () => {
         generateBtn.disabled = !ready;
     };
 
+    document.getElementById('plBackType').addEventListener('change', () => {
+        loadedFaces = [];
+        loadedBacks = [];
+        facesInput.value = '';
+        backInput.value = '';
+        document.getElementById('plFacesFileCount').innerText = '';
+        document.getElementById('plBackFileCount').innerText = '';
+        // updateAll will be called naturally by the inputsToWatch listener
+    });
+
     facesInput.addEventListener('change', async (e) => {
         if (!e.target.files.length) return;
         document.getElementById('plStatus').innerText = "Loading fronts...";
-        loadedFaces = await processFiles(e.target.files);
+        const newImages = await processFiles(e.target.files);
         
         const config = getConfig();
         if (config.backType === 'different') {
             // Interleaved: Face, Back, Face, Back
-            const faces = [];
-            const backs = [];
-            for (let i = 0; i < loadedFaces.length; i++) {
-                if (i % 2 === 0) faces.push(loadedFaces[i]);
-                else backs.push(loadedFaces[i]);
+            for (let i = 0; i < newImages.length; i++) {
+                if (i % 2 === 0) loadedFaces.push(newImages[i]);
+                else loadedBacks.push(newImages[i]);
             }
-            loadedFaces = faces;
-            loadedBacks = backs;
             document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} pairs loaded`;
         } else {
+            loadedFaces.push(...newImages);
             document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} files loaded`;
         }
         
-        checkProportions();
-        updateGenerateBtn();
-        renderPreview();
+        facesInput.value = ''; // Clear to allow re-uploading same file
+        updateAll();
         document.getElementById('plStatus').innerText = "";
     });
 
     backInput.addEventListener('change', async (e) => {
         if (!e.target.files.length) return;
         document.getElementById('plStatus').innerText = "Loading back...";
-        loadedBacks = await processFiles(e.target.files);
+        loadedBacks = await processFiles(e.target.files); // Overwrite global back
         document.getElementById('plBackFileCount').innerText = "1 file loaded";
-        checkProportions();
-        updateGenerateBtn();
-        renderPreview();
+        
+        backInput.value = '';
+        updateAll();
         document.getElementById('plStatus').innerText = "";
     });
 
@@ -110,18 +116,44 @@ document.addEventListener('DOMContentLoaded', () => {
         previewContainer.style.justifyContent = 'center';
         
         const hasBacks = config.backType !== 'none';
+        let draggedPairIndex = null;
 
         loadedFaces.forEach((face, i) => {
             const pairDiv = document.createElement('div');
+            pairDiv.style.position = 'relative';
             pairDiv.style.display = 'flex';
             pairDiv.style.flexDirection = 'column';
             pairDiv.style.alignItems = 'center';
             pairDiv.style.gap = '8px';
             pairDiv.style.background = 'white';
-            pairDiv.style.padding = '10px';
+            pairDiv.style.padding = '15px 10px 10px 10px';
             pairDiv.style.borderRadius = '8px';
             pairDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
             pairDiv.style.border = '1px solid #ddd';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.innerText = '✕';
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '5px';
+            closeBtn.style.right = '5px';
+            closeBtn.style.background = 'transparent';
+            closeBtn.style.border = 'none';
+            closeBtn.style.color = '#dc3545';
+            closeBtn.style.fontSize = '14px';
+            closeBtn.style.fontWeight = 'bold';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.padding = '0';
+            closeBtn.style.lineHeight = '1';
+            closeBtn.title = 'Delete Pair';
+            closeBtn.onclick = () => {
+                loadedFaces.splice(i, 1);
+                if (hasBacks && config.backType === 'different') {
+                    loadedBacks.splice(i, 1);
+                }
+                document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} items loaded`;
+                updateAll();
+            };
+            pairDiv.appendChild(closeBtn);
 
             const title = document.createElement('div');
             title.innerText = `Pair ${i + 1}`;
@@ -169,6 +201,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             pairDiv.appendChild(imgContainer);
+
+            // Drag and drop reordering
+            pairDiv.draggable = true;
+            pairDiv.style.cursor = 'grab';
+
+            pairDiv.addEventListener('dragstart', (e) => {
+                draggedPairIndex = i;
+                pairDiv.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+                // Required for Firefox
+                e.dataTransfer.setData('text/plain', i);
+            });
+
+            pairDiv.addEventListener('dragend', () => {
+                pairDiv.style.opacity = '1';
+                draggedPairIndex = null;
+            });
+
+            pairDiv.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            pairDiv.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                pairDiv.style.boxShadow = '0 0 0 2px #007bff';
+            });
+
+            pairDiv.addEventListener('dragleave', () => {
+                pairDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+            });
+
+            pairDiv.addEventListener('drop', (e) => {
+                e.preventDefault();
+                pairDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                if (draggedPairIndex !== null && draggedPairIndex !== i) {
+                    const movedFace = loadedFaces.splice(draggedPairIndex, 1)[0];
+                    loadedFaces.splice(i, 0, movedFace);
+                    
+                    if (hasBacks && config.backType === 'different') {
+                        const movedBack = loadedBacks.splice(draggedPairIndex, 1)[0];
+                        loadedBacks.splice(i, 0, movedBack);
+                    }
+                    updateAll();
+                }
+            });
+
             previewContainer.appendChild(pairDiv);
         });
     };
