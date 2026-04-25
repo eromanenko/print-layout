@@ -94,6 +94,17 @@ export function initUI() {
 
     // Initial check
     backType.dispatchEvent(new Event('change'));
+
+    // Preview mode toggle logic
+    const modeBtns = document.querySelectorAll('#plPreviewModeToggle .mode-btn');
+    modeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.classList.contains('active')) return;
+            modeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            btn.dispatchEvent(new Event('modeChange', { bubbles: true }));
+        });
+    });
 }
 
 const translations = {

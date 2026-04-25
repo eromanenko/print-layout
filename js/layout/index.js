@@ -97,15 +97,83 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('plStatus').innerText = "";
     });
 
-    const renderPreview = () => {
-        const previewContainer = document.getElementById('plPreviewContainer');
-        if (loadedFaces.length === 0) {
-            previewContainer.innerHTML = '<p>Upload images to generate PDF</p>';
-            previewContainer.style.background = 'transparent';
-            previewContainer.style.border = '2px dashed #ccc';
-            return;
-        }
+    const renderPreviewPairs = (previewContainer) => {
+        const config = getConfig();
+        previewContainer.innerHTML = '';
+        previewContainer.style.border = 'none';
+        previewContainer.style.background = 'transparent';
+        previewContainer.style.display = 'flex';
+        previewContainer.style.flexDirection = 'row';
+        previewContainer.style.flexWrap = 'wrap';
+        previewContainer.style.gap = '20px';
+        previewContainer.style.alignItems = 'flex-start';
+        previewContainer.style.justifyContent = 'center';
+        
+        const hasBacks = config.backType !== 'none';
 
+        loadedFaces.forEach((face, i) => {
+            const pairDiv = document.createElement('div');
+            pairDiv.style.display = 'flex';
+            pairDiv.style.flexDirection = 'column';
+            pairDiv.style.alignItems = 'center';
+            pairDiv.style.gap = '8px';
+            pairDiv.style.background = 'white';
+            pairDiv.style.padding = '10px';
+            pairDiv.style.borderRadius = '8px';
+            pairDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+            pairDiv.style.border = '1px solid #ddd';
+
+            const title = document.createElement('div');
+            title.innerText = `Pair ${i + 1}`;
+            title.style.fontSize = '12px';
+            title.style.fontWeight = 'bold';
+            title.style.color = '#555';
+            pairDiv.appendChild(title);
+
+            const imgContainer = document.createElement('div');
+            imgContainer.style.display = 'flex';
+            imgContainer.style.gap = '5px';
+            imgContainer.style.justifyContent = 'center';
+
+            // Front image
+            const frontImg = document.createElement('img');
+            frontImg.src = face.img.src;
+            frontImg.style.width = '80px';
+            frontImg.style.height = 'auto';
+            frontImg.style.objectFit = 'contain';
+            frontImg.style.borderRadius = '4px';
+            frontImg.style.border = '1px solid #eee';
+            frontImg.title = 'Front';
+            imgContainer.appendChild(frontImg);
+
+            // Back image
+            if (hasBacks) {
+                let backSrc;
+                if (config.backType === 'same' && loadedBacks.length > 0) {
+                    backSrc = loadedBacks[0].img.src;
+                } else if (config.backType === 'different' && loadedBacks.length > 0) {
+                    backSrc = (loadedBacks[i] || loadedBacks[0]).img.src;
+                }
+
+                if (backSrc) {
+                    const backImg = document.createElement('img');
+                    backImg.src = backSrc;
+                    backImg.style.width = '80px';
+                    backImg.style.height = 'auto';
+                    backImg.style.objectFit = 'contain';
+                    backImg.style.borderRadius = '4px';
+                    backImg.style.border = '1px solid #eee';
+                    backImg.title = 'Back';
+                    imgContainer.appendChild(backImg);
+                }
+            }
+
+            pairDiv.appendChild(imgContainer);
+            previewContainer.appendChild(pairDiv);
+        });
+    };
+
+    const renderPreviewLayout = (previewContainer) => {
         const config = getConfig();
         let pageWidth, pageHeight;
         switch(config.pageSize) {
@@ -243,11 +311,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const renderPreview = () => {
+        const previewContainer = document.getElementById('plPreviewContainer');
+        if (loadedFaces.length === 0) {
+            previewContainer.innerHTML = '<p>Upload images to generate PDF</p>';
+            previewContainer.style.background = 'transparent';
+            previewContainer.style.border = '2px dashed #ccc';
+            previewContainer.style.display = 'flex';
+            return;
+        }
+
+        const modeBtn = document.querySelector('#plPreviewModeToggle .active');
+        const mode = modeBtn ? modeBtn.getAttribute('data-mode') : 'pairs';
+
+        if (mode === 'pairs') {
+            renderPreviewPairs(previewContainer);
+        } else {
+            renderPreviewLayout(previewContainer);
+        }
+    };
+
     const updateAll = () => {
         checkProportions();
         updateGenerateBtn();
         renderPreview();
     };
+
+    document.addEventListener('modeChange', renderPreview);
 
     // Recheck proportions and logic on inputs change
     const inputsToWatch = [

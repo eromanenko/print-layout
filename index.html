@@ -215,9 +215,18 @@
         </div>
 
         <div class="main-content"
-            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box;">
+            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column;">
+            
+            <!-- Preview Mode Toggle -->
+            <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                <div class="mode-toggle" id="plPreviewModeToggle">
+                    <button class="mode-btn active" data-mode="pairs" title="Show pairs grid">Pairs Grid</button>
+                    <button class="mode-btn" data-mode="layout" title="Show page layout">Page Layout</button>
+                </div>
+            </div>
+
             <div id="plPreviewContainer"
-                style="text-align: center; color: #666; padding: 40px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; min-height: 400px; flex-direction: column;">
+                style="flex: 1; text-align: center; color: #666; padding: 20px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow-y: auto; flex-direction: column;">
                 <p>Upload images to generate PDF</p>
             </div>
         </div>
