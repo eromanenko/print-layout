@@ -258,9 +258,10 @@
                     <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
                         <button id="locLoadConfigBtn" style="cursor: pointer; flex: 1; padding: 5px;">Load Config</button>
                         <input type="file" id="locConfigInput" accept=".json" style="display: none;">
+                        <button id="locViewConfigBtn" style="cursor: pointer; padding: 5px; display: none; background: #6c757d; color: white; border: none; border-radius: 4px;" title="View JSON Config">👁️</button>
                     </div>
                     <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
-                        <button id="locExportConfigBtn" style="cursor: pointer; flex: 1;">Save Config</button>
+                        <button id="locExportConfigBtn" style="cursor: pointer; flex: 1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold;">Save Config</button>
                         <label style="font-size: 0.9em; cursor: pointer; flex: 1; display: flex; align-items: center; gap: 5px;">
                             <input type="checkbox" id="locAutosaveBtn" /> Autosave
                         </label>
@@ -312,6 +313,17 @@
                 </div>
             </div>
 
+            <!-- Export Options -->
+            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display: flex; flex-direction: column; gap: 10px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>5. Export & Save</b>
+                    <button id="locExportProjectBtn" style="cursor: pointer; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; font-weight: bold;">📦 Save Project (Images + JSON)</button>
+                    <button id="locExportImagesBtn" style="cursor: pointer; padding: 8px; background: #6f42c1; color: white; border: none; border-radius: 4px; font-weight: bold;">🖼️ Export Rendered Images (ZIP)</button>
+                    <button id="locExportPdfBtn" style="cursor: pointer; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold;">📄 Send to Print Layout</button>
+                    <span id="locExportStatus" style="font-size: 0.9em; color: #666; text-align: center; display: none;"></span>
+                </div>
+            </div>
+
         </div>
 
         <!-- Localizer Main Content (Gallery) -->
@@ -324,9 +336,14 @@
                     <span id="locCardName" style="font-weight: bold; font-size: 1.2em;">Card Name</span>
                     
                     <!-- Navigation Controls -->
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
                         <button id="locAddTextBtn" style="cursor: pointer; font-size: 1em; background: #28a745; color: white; border: none; border-radius: 4px; padding: 0 10px;">+ Add Text</button>
-                        <div style="width: 20px;"></div>
+                        <div style="display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+                            <button id="locAlignLeftBtn" title="Align Left" style="cursor: pointer; background: white; border: none; padding: 5px 10px; border-right: 1px solid #ccc;">⬅️</button>
+                            <button id="locAlignCenterBtn" title="Align Center" style="cursor: pointer; background: white; border: none; padding: 5px 10px; border-right: 1px solid #ccc;">↔️</button>
+                            <button id="locAlignRightBtn" title="Align Right" style="cursor: pointer; background: white; border: none; padding: 5px 10px;">➡️</button>
+                        </div>
+                        <div style="width: 10px;"></div>
                         <button id="locPrevBtn" style="cursor: pointer; font-size: 1em;">&larr; Prev</button>
                         <button id="locRotateBtn" style="cursor: pointer; font-size: 1em;" title="Rotate Right">↻ Rotate</button>
                         <button id="locNextBtn" style="cursor: pointer; font-size: 1em;">Next &rarr;</button>
@@ -355,6 +372,23 @@
             </div>
         </div>
     </div> <!-- End Localizer Tab -->
+
+    <!-- JSON Config Viewer Modal -->
+    <div id="locJsonModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1e1e1e; color: #d4d4d4; width: 80%; height: 80%; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; font-family: 'Consolas', 'JetBrains Mono', monospace; font-size: 14px;">
+            <div style="padding: 10px 20px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: #fff;">JSON Configuration</h3>
+                <button id="locCloseJsonModal" style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 16px;">✖</button>
+            </div>
+            <style>
+                #locJsonTree details > summary { list-style: none; }
+                #locJsonTree details > summary::-webkit-details-marker { display: none; }
+            </style>
+            <div id="locJsonTree" style="padding: 20px; overflow-y: auto; flex: 1;">
+                <!-- Rendered JSON will go here -->
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="js/layout/index.js"></script>
     <script type="module" src="js/localizer/index.js"></script>

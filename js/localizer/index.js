@@ -31,6 +31,9 @@ const els = {
     nextBtn: document.getElementById('locNextBtn'),
     rotateBtn: document.getElementById('locRotateBtn'),
     addTextBtn: document.getElementById('locAddTextBtn'),
+    alignLeftBtn: document.getElementById('locAlignLeftBtn'),
+    alignCenterBtn: document.getElementById('locAlignCenterBtn'),
+    alignRightBtn: document.getElementById('locAlignRightBtn'),
     
     // Workspace Elements
     workspace: document.getElementById('locWorkspace'),
@@ -42,6 +45,19 @@ const els = {
     configInput: document.getElementById('locConfigInput'),
     exportConfigBtn: document.getElementById('locExportConfigBtn'),
     autosaveBtn: document.getElementById('locAutosaveBtn'),
+    
+    // Phase 5 Elements
+    viewConfigBtn: document.getElementById('locViewConfigBtn'),
+    exportProjectBtn: document.getElementById('locExportProjectBtn'),
+    exportImagesBtn: document.getElementById('locExportImagesBtn'),
+    exportPdfBtn: document.getElementById('locExportPdfBtn'),
+    exportStatus: document.getElementById('locExportStatus'),
+    
+    // JSON Modal
+    jsonModal: document.getElementById('locJsonModal'),
+    closeJsonModal: document.getElementById('locCloseJsonModal'),
+    jsonTree: document.getElementById('locJsonTree'),
+    
     langSelect: document.getElementById('locLangSelect'),
     fontsList: document.getElementById('locFontsList'),
     newFontName: document.getElementById('locNewFontName'),
@@ -61,11 +77,30 @@ els.prevBtn.addEventListener('click', () => navigate(-1));
 els.nextBtn.addEventListener('click', () => navigate(1));
 els.rotateBtn.addEventListener('click', handleRotate);
 els.addTextBtn.addEventListener('click', handleAddText);
+els.alignLeftBtn.addEventListener('click', () => setAlignment('left'));
+els.alignCenterBtn.addEventListener('click', () => setAlignment('center'));
+els.alignRightBtn.addEventListener('click', () => setAlignment('right'));
+
+function setAlignment(align) {
+    if (!state.activeTextId || state.images.length === 0) return;
+    const card = state.images[state.currentIndex];
+    const config = state.config.cards[card.name];
+    if (config && config.texts) {
+        const txt = config.texts.find(t => t.id === state.activeTextId);
+        if (txt) {
+            txt.align = align;
+            autosaveConfig();
+            renderOverlays();
+            redrawCanvas();
+        }
+    }
+}
 
 // Phase 2 Listeners
 els.langSelect.addEventListener('change', (e) => {
     state.config.currentLang = e.target.value;
     renderOverlays(); // Just re-render overlays to switch text
+    redrawCanvas();
 });
 els.addFontBtn.addEventListener('click', handleAddFont);
 els.previewFontBtn.addEventListener('click', handlePreviewFont);
@@ -74,6 +109,15 @@ els.newFontSize.addEventListener('input', updatePreviewStyle);
 els.newFontColor.addEventListener('input', updatePreviewStyle);
 
 els.exportConfigBtn.addEventListener('click', () => saveConfigToFile(false));
+els.viewConfigBtn.addEventListener('click', handleViewConfig);
+els.exportProjectBtn.addEventListener('click', handleExportProject);
+els.exportImagesBtn.addEventListener('click', handleExportImages);
+els.exportPdfBtn.addEventListener('click', handleExportPdf);
+
+els.closeJsonModal.addEventListener('click', () => els.jsonModal.style.display = 'none');
+els.jsonModal.addEventListener('click', (e) => {
+    if (e.target === els.jsonModal) els.jsonModal.style.display = 'none';
+});
 
 els.loadConfigBtn.addEventListener('click', async () => {
     if (window.showOpenFilePicker) {
@@ -165,6 +209,198 @@ async function saveConfigToFile(silent = false) {
     }
 }
 
+// --- View Config (JSON Viewer) ---
+
+function renderJsonToHTML(data) {
+    if (data === null) return `<span style="color:#94a3b8">null</span>`;
+    if (typeof data === 'string') {
+        let str = data;
+        if (str.startsWith('data:') && str.length > 50) {
+            str = str.substring(0, 50) + '... (truncated)';
+        }
+        return `<span style="color:#a3e635">"${str}"</span>`;
+    }
+    if (typeof data === 'number') return `<span style="color:#fb923c">${data}</span>`;
+    if (typeof data === 'boolean') return `<span style="color:#f472b6">${data}</span>`;
+    
+    if (Array.isArray(data)) {
+        if (data.length === 0) return `<span>[]</span>`;
+        let html = `<span>[</span><div style="padding-left: 20px; border-left: 1px solid #444; margin-left: 5px;">`;
+        data.forEach((item, i) => {
+            html += `<div>${renderJsonToHTML(item)}${i < data.length - 1 ? ',' : ''}</div>`;
+        });
+        html += `</div><span>]</span>`;
+        return html;
+    }
+    
+    if (typeof data === 'object') {
+        const keys = Object.keys(data);
+        if (keys.length === 0) return `<span>{}</span>`;
+        
+        let html = `<details open><summary style="cursor: pointer; user-select: none;">{</summary><div style="padding-left: 20px; border-left: 1px solid #444; margin-left: 5px;">`;
+        keys.forEach((k, i) => {
+            const val = data[k];
+            html += `<div><span style="color:#38bdf8">"${k}"</span>: ${renderJsonToHTML(val)}${i < keys.length - 1 ? ',' : ''}</div>`;
+        });
+        html += `</div><span>}</span></details>`;
+        return html;
+    }
+    return String(data);
+}
+
+function handleViewConfig() {
+    els.jsonTree.innerHTML = renderJsonToHTML(state.config);
+    els.jsonModal.style.display = 'flex';
+}
+
+// --- Phase 5: Exports ---
+
+async function handleExportProject() {
+    if (state.images.length === 0) return showToast("No project to save", "error");
+    
+    els.exportStatus.style.display = 'block';
+    els.exportStatus.textContent = 'Packing project...';
+    
+    try {
+        const zip = new window.JSZip();
+        
+        // Add config
+        const configStr = JSON.stringify(state.config, null, 2);
+        zip.file('config.json', configStr);
+        
+        // Add images
+        for (const img of state.images) {
+            const response = await fetch(img.blobUrl);
+            const blob = await response.blob();
+            zip.file(img.name, blob);
+        }
+        
+        const content = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = "localizer_project.zip";
+        a.click();
+        
+        showToast("Project saved successfully", "success");
+    } catch (err) {
+        showToast("Error saving project: " + err.message, "error");
+    } finally {
+        els.exportStatus.style.display = 'none';
+    }
+}
+
+async function handleExportImages() {
+    if (state.images.length === 0) return showToast("No images to export", "error");
+    
+    els.exportStatus.style.display = 'block';
+    els.exportStatus.textContent = 'Rendering images...';
+    
+    try {
+        const zip = new window.JSZip();
+        const offCanvas = document.createElement('canvas');
+        const offCtx = offCanvas.getContext('2d');
+        
+        for (let i = 0; i < state.images.length; i++) {
+            const card = state.images[i];
+            els.exportStatus.textContent = `Rendering ${i+1}/${state.images.length}...`;
+            
+            const img = card.loadedImg || await new Promise((resolve) => {
+                const iObj = new Image();
+                iObj.onload = () => resolve(iObj);
+                iObj.src = card.blobUrl;
+            });
+            
+            offCanvas.width = img.width;
+            offCanvas.height = img.height;
+            offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+            offCtx.drawImage(img, 0, 0);
+            
+            const cardConfig = state.config.cards[card.name];
+            if (cardConfig && cardConfig.texts) {
+                cardConfig.texts.forEach(t => {
+                    drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height);
+                });
+            }
+            
+            const blob = await new Promise(res => offCanvas.toBlob(res, 'image/jpeg', 0.9));
+            zip.file(card.name, blob);
+        }
+        
+        els.exportStatus.textContent = 'Zipping...';
+        const content = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = `localized_images_${state.config.currentLang}.zip`;
+        a.click();
+        
+        showToast("Images exported successfully", "success");
+    } catch (err) {
+        showToast("Error exporting images: " + err.message, "error");
+    } finally {
+        els.exportStatus.style.display = 'none';
+    }
+}
+
+async function handleExportPdf() {
+    if (state.images.length === 0) return showToast("No images to export", "error");
+    
+    els.exportStatus.style.display = 'block';
+    els.exportStatus.textContent = 'Rendering for PDF...';
+    
+    try {
+        const offCanvas = document.createElement('canvas');
+        const offCtx = offCanvas.getContext('2d');
+        const dataTransfer = new DataTransfer();
+        
+        for (let i = 0; i < state.images.length; i++) {
+            const card = state.images[i];
+            els.exportStatus.textContent = `Rendering ${i+1}/${state.images.length}...`;
+            
+            const img = card.loadedImg || await new Promise((resolve) => {
+                const iObj = new Image();
+                iObj.onload = () => resolve(iObj);
+                iObj.src = card.blobUrl;
+            });
+            
+            offCanvas.width = img.width;
+            offCanvas.height = img.height;
+            offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+            offCtx.drawImage(img, 0, 0);
+            
+            const cardConfig = state.config.cards[card.name];
+            if (cardConfig && cardConfig.texts) {
+                cardConfig.texts.forEach(t => {
+                    drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height);
+                });
+            }
+            
+            const blob = await new Promise(res => offCanvas.toBlob(res, 'image/jpeg', 1.0));
+            // Replace extension with jpg
+            const newName = card.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            dataTransfer.items.add(new File([blob], newName, { type: 'image/jpeg' }));
+        }
+        
+        // Send to Print Layout
+        const plInput = document.getElementById('plFacesFileInput');
+        if (plInput) {
+            plInput.files = dataTransfer.files;
+            plInput.dispatchEvent(new Event('change'));
+            
+            // Switch tab
+            const plTabBtn = document.querySelector('.main-tab-btn[data-target="tab-print-layout"]');
+            if (plTabBtn) plTabBtn.click();
+            
+            showToast("Images sent to Print Layout!", "success");
+        } else {
+            showToast("Error: Print Layout tab not found", "error");
+        }
+    } catch (err) {
+        showToast("Error exporting to PDF: " + err.message, "error");
+    } finally {
+        els.exportStatus.style.display = 'none';
+    }
+}
+
 async function handleFilesUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -184,12 +420,33 @@ async function handleFilesUpload(e) {
                 const zip = new window.JSZip();
                 const loadedZip = await zip.loadAsync(file);
                 
+                // Try to load config.json if it exists
+                if (loadedZip.files['config.json']) {
+                    try {
+                        const configText = await loadedZip.files['config.json'].async('string');
+                        const configObj = JSON.parse(configText);
+                        if (configObj.fonts && configObj.cards) {
+                            state.config = configObj;
+                            // Re-inject fonts
+                            Object.keys(state.config.fonts).forEach(name => {
+                                const f = state.config.fonts[name];
+                                if (f.base64) injectFont(f.family, f.base64);
+                            });
+                            els.langSelect.value = state.config.currentLang || state.config.languages[0];
+                            updateFontsList();
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse config.json from ZIP:", e);
+                    }
+                }
+                
                 for (const [filename, fileData] of Object.entries(loadedZip.files)) {
                     // Skip directories and non-images
                     if (fileData.dir || !filename.match(/\.(jpe?g|png|webp)$/i)) continue;
                     
                     const blob = await fileData.async('blob');
                     const blobUrl = URL.createObjectURL(blob);
+                    const cleanName = filename.split('/').pop();
                     let savedRot = 0;
                     if (state.config.cards[cleanName] && state.config.cards[cleanName].rotation) {
                         savedRot = state.config.cards[cleanName].rotation;
@@ -285,12 +542,7 @@ function renderCurrentCard() {
     // Load image and draw to canvas
     const img = new Image();
     img.onload = () => {
-        // We always draw the image in its original unrotated state!
-        els.canvas.width = img.width;
-        els.canvas.height = img.height;
-        
-        els.ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
-        els.ctx.drawImage(img, 0, 0);
+        card.loadedImg = img;
         
         // CSS Rotation & Scaling
         const rot = card.rotation || 0;
@@ -313,9 +565,119 @@ function renderCurrentCard() {
         els.rotationContainer.style.height = img.height + 'px';
         els.rotationContainer.style.transform = `scale(${scale}) rotate(${rot}deg)`;
         
+        redrawCanvas();
         renderOverlays();
     };
     img.src = card.blobUrl;
+}
+
+function redrawCanvas() {
+    if (state.images.length === 0) return;
+    const card = state.images[state.currentIndex];
+    const img = card.loadedImg;
+    if (!img) return;
+
+    els.canvas.width = img.width;
+    els.canvas.height = img.height;
+    
+    els.ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+    els.ctx.drawImage(img, 0, 0);
+    
+    const cardConfig = state.config.cards[card.name];
+    if (cardConfig && cardConfig.texts) {
+        cardConfig.texts.forEach(t => {
+            drawTextOnCanvas(els.ctx, t, els.canvas.width, els.canvas.height);
+        });
+    }
+}
+
+function getShrunkFontSize(ctx, textContent, font, pxW, pxH) {
+    if (!textContent.trim() || !font) return font ? font.size : 20;
+    let fontSize = font.size;
+    const minFontSize = 4;
+    while (fontSize >= minFontSize) {
+        ctx.font = `${fontSize}px "${font.family}"`;
+        const lines = calculateWordWrap(ctx, textContent, pxW);
+        const totalHeight = lines.length * (fontSize * 1.2);
+        if (totalHeight <= pxH) break;
+        fontSize--;
+    }
+    return fontSize;
+}
+
+function calculateWordWrap(ctx, text, maxWidth) {
+    const lines = [];
+    const paragraphs = text.split('\n');
+
+    paragraphs.forEach(paragraph => {
+        const words = paragraph.split(' ');
+        let currentLine = words[0];
+
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = ctx.measureText(currentLine + " " + word).width;
+            if (width < maxWidth) {
+                currentLine += " " + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word || ""; // safety
+            }
+        }
+        lines.push(currentLine);
+    });
+
+    return lines;
+}
+
+function drawTextOnCanvas(ctx, t, canvasWidth, canvasHeight) {
+    const lang = state.config.currentLang;
+    const textContent = t.content[lang] || '';
+    if (!textContent.trim()) return;
+
+    const font = state.config.fonts[t.fontId];
+    if (!font) return;
+
+    const pxX = (t.x / 100) * canvasWidth;
+    const pxY = (t.y / 100) * canvasHeight;
+    const pxW = (t.width / 100) * canvasWidth;
+    const pxH = (t.height / 100) * canvasHeight;
+
+    ctx.save();
+    
+    // Translate to the center of the text box for rotation
+    const centerX = pxX + pxW / 2;
+    const centerY = pxY + pxH / 2;
+    ctx.translate(centerX, centerY);
+    ctx.rotate((t.rotation || 0) * Math.PI / 180);
+    ctx.translate(-pxW / 2, -pxH / 2); // Now origin is top-left of the box
+
+    const fontSize = getShrunkFontSize(ctx, textContent, font, pxW, pxH);
+    ctx.font = `${fontSize}px "${font.family}"`;
+    ctx.fillStyle = font.color || '#000';
+    ctx.textBaseline = 'top';
+
+    const lines = calculateWordWrap(ctx, textContent, pxW);
+    const lineHeight = fontSize * 1.2;
+    let currentY = 0; // Top aligned
+
+    lines.forEach(line => {
+        let textX = 0;
+        const textWidth = ctx.measureText(line).width;
+        
+        const align = t.align || 'center';
+        if (align === 'center') {
+            textX = (pxW - textWidth) / 2;
+        } else if (align === 'right') {
+            textX = pxW - textWidth;
+        } else {
+            textX = 0; // left
+        }
+
+        ctx.fillText(line, textX, currentY);
+        currentY += lineHeight;
+    });
+
+    ctx.restore();
 }
 
 // --- Phase 3: Text Overlays ---
@@ -344,6 +706,7 @@ function handleAddText() {
         width: 40, // 40% width
         height: 10, // 10% height
         rotation: spawnRot,
+        align: 'center',
         content: {}
     };
     
@@ -403,11 +766,17 @@ function renderOverlays() {
         
         const font = state.config.fonts[t.fontId];
         const fontFamily = font ? font.family : 'sans-serif';
-        const fontSize = font ? font.size : 20;
         const fontColor = font ? font.color : '#000';
+        const taAlign = t.align || 'center';
         
         const lang = state.config.currentLang;
         const textContent = t.content[lang] || '';
+        
+        const canvasW = els.canvas.width || 1000;
+        const canvasH = els.canvas.height || 1000;
+        const pxW = (t.width / 100) * canvasW;
+        const pxH = (t.height / 100) * canvasH;
+        const shrunkSize = getShrunkFontSize(els.ctx, textContent, font, pxW, pxH);
         
         const handleDisplay = isActive ? 'flex' : 'none';
         
@@ -432,12 +801,17 @@ function renderOverlays() {
             
             <button class="loc-del-text loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-size:12px; padding:0; z-index:10; display:${isActive?'block':'none'};">X</button>
 
-            <textarea style="flex:1; width:100%; height:100%; resize:none; background:rgba(255,255,255,0.5); border:none; outline:none; font-family:'${fontFamily}'; font-size:${fontSize}px; color:${fontColor}; text-align:center; box-sizing:border-box; padding:5px; overflow:hidden;">${textContent}</textarea>
+            <textarea style="flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}'; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; overflow:hidden;">${textContent}</textarea>
         `;
         
         // Listeners
         const ta = div.querySelector('textarea');
-        ta.addEventListener('input', (e) => t.content[lang] = e.target.value);
+        ta.addEventListener('input', (e) => {
+            t.content[lang] = e.target.value;
+            const newShrunkSize = getShrunkFontSize(els.ctx, e.target.value, font, pxW, pxH);
+            ta.style.fontSize = newShrunkSize + 'px';
+            redrawCanvas();
+        });
         ta.addEventListener('blur', () => autosaveConfig());
         ta.addEventListener('focus', () => setActiveText(t.id));
         div.addEventListener('mousedown', () => setActiveText(t.id));
@@ -662,6 +1036,9 @@ function injectFont(familyName, base64Url) {
 function updateFontsList() {
     els.fontsList.innerHTML = '';
     const fontNames = Object.keys(state.config.fonts);
+    
+    const hasConfig = Object.keys(state.config.cards).length > 0 || fontNames.length > 0;
+    els.viewConfigBtn.style.display = hasConfig ? 'block' : 'none';
     
     // Find active fontId
     let activeFontId = null;

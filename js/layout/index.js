@@ -59,13 +59,40 @@ document.addEventListener('DOMContentLoaded', () => {
         generateBtn.disabled = !ready;
     };
 
-    document.getElementById('plBackType').addEventListener('change', () => {
+    let previousBackType = document.getElementById('plBackType').value;
+    
+    document.getElementById('plBackType').addEventListener('change', (e) => {
+        const newType = e.target.value;
+        if (previousBackType === newType) return;
+        
+        const allCombined = [];
+        if (previousBackType === 'different') {
+            const maxLen = Math.max(loadedFaces.length, loadedBacks.length);
+            for (let i = 0; i < maxLen; i++) {
+                if (loadedFaces[i]) allCombined.push(loadedFaces[i]);
+                if (loadedBacks[i]) allCombined.push(loadedBacks[i]);
+            }
+        } else {
+            allCombined.push(...loadedFaces);
+        }
+        
         loadedFaces = [];
         loadedBacks = [];
-        facesInput.value = '';
-        backInput.value = '';
-        document.getElementById('plFacesFileCount').innerText = '';
-        document.getElementById('plBackFileCount').innerText = '';
+        
+        if (newType === 'different') {
+            for (let i = 0; i < allCombined.length; i++) {
+                if (i % 2 === 0) loadedFaces.push(allCombined[i]);
+                else loadedBacks.push(allCombined[i]);
+            }
+            document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} pairs loaded`;
+            document.getElementById('plBackFileCount').innerText = '';
+        } else {
+            loadedFaces = allCombined;
+            document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} files loaded`;
+            document.getElementById('plBackFileCount').innerText = '';
+        }
+        
+        previousBackType = newType;
         // updateAll will be called naturally by the inputsToWatch listener
     });
 
