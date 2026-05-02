@@ -17,8 +17,16 @@
 </head>
 
 <body>
-    <h2>Print Layout Generator</h2>
-    <div id="tab-layout" class="tab-content active"
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Print Layout Generator</h2>
+        <div class="main-tabs" style="display: flex; gap: 10px;">
+            <button class="main-tab-btn active" data-target="tab-print-layout" style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #007bff; color: white; font-weight: bold;">Print Layout</button>
+            <button class="main-tab-btn" data-target="tab-localizer" style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; color: #333;">Card Localizer</button>
+        </div>
+    </div>
+
+    <!-- PRINT LAYOUT TAB -->
+    <div id="tab-print-layout" class="main-tab-content active"
         style="display: flex; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
         <div class="sidebar"
             style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
@@ -91,10 +99,10 @@
                 style="display:flex; flex-direction:column; gap:0px; padding:0; border-radius:4px; overflow:hidden; flex-shrink:0;">
                 <div style="display:flex; background:#e9ecef; border-radius:4px 4px 0 0;">
                     <button class="pl-side-tab active" data-side="front"
-                        style="flex:1; padding:8px; border:none; background:#007bff; color:white; cursor:pointer;">Front
+                        style="flex:1; border:none; background:#007bff; color:white; cursor:pointer;">Front
                         Settings</button>
                     <button class="pl-side-tab" id="plSideTabBackBtn" data-side="back"
-                        style="flex:1; padding:8px; border:none; background:transparent; color:#333; cursor:pointer;">Back
+                        style="flex:1; border:none; background:transparent; color:#333; cursor:pointer;">Back
                         Settings</button>
                 </div>
 
@@ -208,7 +216,7 @@
 
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
                 <button id="plGenerateBtn"
-                    style="font-size: 1.1em; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                    style="font-size: 1.1em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;"
                     disabled>Generate PDF</button>
                 <span id="plStatus" style="font-weight: bold; text-align: center;"></span>
             </div>
@@ -230,8 +238,161 @@
                 <p>Upload images to generate PDF</p>
             </div>
         </div>
-    </div>
+    </div> <!-- End Print Layout Tab -->
+
+    <!-- CARD LOCALIZER TAB -->
+    <div id="tab-localizer" class="main-tab-content"
+        style="display: none; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
+        
+        <!-- Localizer Sidebar -->
+        <div class="sidebar"
+            style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+            <p class="instructions" style="margin: 0;">
+                <b>Card Localizer:</b> Upload a ZIP of cards to add localized text.
+            </p>
+
+            <!-- Config IO -->
+            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>1. Configuration (JSON):</b>
+                    <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
+                        <button id="locLoadConfigBtn" style="cursor: pointer; flex: 1; padding: 5px;">Load Config</button>
+                        <input type="file" id="locConfigInput" accept=".json" style="display: none;">
+                    </div>
+                    <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
+                        <button id="locExportConfigBtn" style="cursor: pointer; flex: 1;">Save Config</button>
+                        <label style="font-size: 0.9em; cursor: pointer; flex: 1; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="locAutosaveBtn" /> Autosave
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deck Upload -->
+            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>2. Deck Archive (ZIP) or Images:</b>
+                    <input type="file" id="locZipInput" accept=".zip,image/*" multiple title="Upload Cards (ZIP or Multiple Images)">
+                    <span id="locZipCount" style="color: #666; font-size: 0.9em;"></span>
+                </div>
+            </div>
+
+            <!-- Language Switcher -->
+            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
+                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>3. Current Language:</b>
+                    <select id="locLangSelect" style="width: 100px;">
+                        <option value="en">English</option>
+                        <option value="ua">Українська</option>
+                        <option value="ru">Русский</option>
+                    </select>
+                </label>
+            </div>
+
+            <!-- Fonts Manager -->
+            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display: flex; flex-direction: column; gap: 10px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>4. Font Styles Manager</b>
+                    <div id="locFontsList" style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white;">
+                        <span style="color:#666; font-size:0.9em; text-align:center;">No custom fonts added</span>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px;">
+                        <input type="text" id="locNewFontName" placeholder="Style Name (e.g. TitleFont)" style="padding: 5px;">
+                        <input type="file" id="locNewFontFile" accept=".ttf,.woff" title="Upload TTF/WOFF">
+                        <div style="display:flex; gap: 10px;">
+                            <label style="flex:1;">Size: <input type="number" id="locNewFontSize" value="20" style="width:50px;"></label>
+                            <label>Color: <input type="color" id="locNewFontColor" value="#000000"></label>
+                        </div>
+                        <div style="display:flex; gap: 10px;">
+                            <button id="locPreviewFontBtn" style="flex:1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px;">Preview</button>
+                            <button id="locAddFontBtn" style="flex:2; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px;">+ Add Font Style</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Localizer Main Content (Gallery) -->
+        <div class="main-content"
+            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #eee;">
+            
+            <div id="locGalleryContainer" style="display: none; width: 100%; height: 100%; position: relative; flex-direction: column; align-items: center;">
+                <!-- Toolbar -->
+                <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; align-items: center;">
+                    <span id="locCardName" style="font-weight: bold; font-size: 1.2em;">Card Name</span>
+                    
+                    <!-- Navigation Controls -->
+                    <div style="display: flex; gap: 10px;">
+                        <button id="locAddTextBtn" style="cursor: pointer; font-size: 1em; background: #28a745; color: white; border: none; border-radius: 4px; padding: 0 10px;">+ Add Text</button>
+                        <div style="width: 20px;"></div>
+                        <button id="locPrevBtn" style="cursor: pointer; font-size: 1em;">&larr; Prev</button>
+                        <button id="locRotateBtn" style="cursor: pointer; font-size: 1em;" title="Rotate Right">↻ Rotate</button>
+                        <button id="locNextBtn" style="cursor: pointer; font-size: 1em;">Next &rarr;</button>
+                    </div>
+
+                    <span><span id="locCurrentIndex">0</span> / <span id="locTotalCards">0</span></span>
+                </div>
+
+                <!-- Workspace / Canvas Wrapper -->
+                <div id="locWorkspace" style="flex: 1; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #e9ecef; border: 1px solid #ccc; overflow: hidden;">
+                    <div id="locRotationContainer" style="position: relative; transform-origin: center center; flex-shrink: 0;">
+                        <canvas id="locCanvas" style="display: block; box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: white; max-width: none; max-height: none;"></canvas>
+                        <div id="locOverlaysContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                    </div>
+                    
+                    <!-- Font Preview Overlay -->
+                    <div id="locFontPreviewOverlay" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 5px; background: rgba(255,255,255,0.3); border: 1px dashed #888; cursor: move; user-select: none; z-index: 100;">
+                        <div id="locFontPreviewText" contenteditable="true" style="min-width: 50px; outline: none; white-space: pre-wrap; cursor: text;">Sample</div>
+                        <button id="locClosePreviewBtn" style="position: absolute; top: -10px; right: -10px; width: 20px; height: 20px; padding: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; z-index: 101;">X</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="locEmptyState" style="color: #666; text-align: center;">
+                <p>Upload a ZIP file to start localizing.</p>
+            </div>
+        </div>
+    </div> <!-- End Localizer Tab -->
+
     <script type="module" src="js/layout/index.js"></script>
+    <script type="module" src="js/localizer/index.js"></script>
+
+    <script>
+        // Simple script to handle main tab switching
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtns = document.querySelectorAll('.main-tab-btn');
+            const tabContents = document.querySelectorAll('.main-tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all
+                    tabBtns.forEach(b => {
+                        b.classList.remove('active');
+                        b.style.background = '#f8f9fa';
+                        b.style.color = '#333';
+                        b.style.fontWeight = 'normal';
+                    });
+                    tabContents.forEach(c => {
+                        c.style.display = 'none';
+                        c.classList.remove('active');
+                    });
+
+                    // Set active
+                    btn.classList.add('active');
+                    btn.style.background = '#007bff';
+                    btn.style.color = 'white';
+                    btn.style.fontWeight = 'bold';
+                    
+                    const targetId = btn.getAttribute('data-target');
+                    const targetContent = document.getElementById(targetId);
+                    targetContent.style.display = 'flex';
+                    targetContent.classList.add('active');
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
