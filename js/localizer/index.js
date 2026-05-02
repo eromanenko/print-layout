@@ -693,12 +693,9 @@ function drawPatchOnCanvas(ctx, p, canvasWidth, canvasHeight) {
 
     ctx.save();
     
-    // Translate to the center of the patch for rotation
-    const centerX = pxX + pxW / 2;
-    const centerY = pxY + pxH / 2;
-    ctx.translate(centerX, centerY);
+    // Translate to top-left corner for rotation (origin 0,0)
+    ctx.translate(pxX, pxY);
     ctx.rotate((p.rotation || 0) * Math.PI / 180);
-    ctx.translate(-pxW / 2, -pxH / 2); // Now origin is top-left of the box
 
     ctx.fillStyle = p.color || '#ffffff';
     ctx.fillRect(0, 0, pxW, pxH);
@@ -711,7 +708,7 @@ function getShrunkFontSize(ctx, textContent, font, pxW, pxH) {
     let fontSize = font.size;
     const minFontSize = 4;
     while (fontSize >= minFontSize) {
-        ctx.font = `${fontSize}px "${font.family}"`;
+        ctx.font = `400 ${fontSize}px "${font.family}", sans-serif`;
         const lines = calculateWordWrap(ctx, textContent, pxW);
         const totalHeight = lines.length * (fontSize * 1.2);
         if (totalHeight <= pxH) break;
@@ -759,35 +756,28 @@ function drawTextOnCanvas(ctx, t, canvasWidth, canvasHeight) {
 
     ctx.save();
     
-    // Translate to the center of the text box for rotation
-    const centerX = pxX + pxW / 2;
-    const centerY = pxY + pxH / 2;
-    ctx.translate(centerX, centerY);
+    // Translate to top-left corner for rotation (origin 0,0)
+    ctx.translate(pxX, pxY);
     ctx.rotate((t.rotation || 0) * Math.PI / 180);
-    ctx.translate(-pxW / 2, -pxH / 2); // Now origin is top-left of the box
 
     const fontSize = getShrunkFontSize(ctx, textContent, font, pxW, pxH);
     const italic = font.italic ? 'italic ' : '';
-    ctx.font = `${italic}${fontSize}px "${font.family}"`;
+    ctx.font = `400 ${italic}${fontSize}px "${font.family}", sans-serif`;
     ctx.fillStyle = font.color || '#000';
     ctx.textBaseline = 'top';
 
     const lines = calculateWordWrap(ctx, textContent, pxW);
     const lineHeight = fontSize * 1.2;
-    let currentY = 0; // Top aligned
+    const align = t.align || 'center';
+    ctx.textAlign = align;
+    
+    let currentY = 0; 
 
     lines.forEach(line => {
         let textX = 0;
-        const textWidth = ctx.measureText(line).width;
-        
-        const align = t.align || 'center';
-        if (align === 'center') {
-            textX = (pxW - textWidth) / 2;
-        } else if (align === 'right') {
-            textX = pxW - textWidth;
-        } else {
-            textX = 0; // left
-        }
+        if (align === 'center') textX = pxW / 2;
+        else if (align === 'right') textX = pxW;
+        else textX = 0;
 
         ctx.fillText(line, textX, currentY);
         currentY += lineHeight;
@@ -955,6 +945,7 @@ async function renderOverlays() {
             div.style.pointerEvents = 'auto';
             div.style.boxSizing = 'border-box';
             div.style.background = 'transparent';
+            div.style.transformOrigin = '0 0';
             
             div.innerHTML = `
                 <div class="loc-drag-handle loc-handle" style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:#fd7e14; border-radius:50%; cursor:grab; z-index:10; display:${isActive?'block':'none'};" title="Drag"></div>
@@ -997,6 +988,7 @@ async function renderOverlays() {
         div.style.zIndex = isActive ? '20' : '1';
         div.style.pointerEvents = 'auto'; // allow interaction
         div.style.boxSizing = 'border-box';
+        div.style.transformOrigin = '0 0';
         div.style.display = 'flex';
         div.style.flexDirection = 'column';
         
@@ -1042,7 +1034,7 @@ async function renderOverlays() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
-            <textarea style="flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}'; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; overflow:hidden; font-style:${fontStyle};">${textContent}</textarea>
+            <textarea style="display:block; vertical-align:top; flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}', sans-serif; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; margin:0; line-height:1.2; overflow:hidden; font-style:${fontStyle}; font-weight:400; white-space:pre-wrap; word-wrap:break-word;">${textContent}</textarea>
         `;
         
         // Listeners
@@ -1063,6 +1055,7 @@ async function renderOverlays() {
             if (state.activeTextId === t.id) state.activeTextId = null;
             autosaveConfig();
             renderOverlays();
+            redrawCanvas();
             updateFontsList();
         });
         
@@ -1111,11 +1104,34 @@ function setupOverlayInteraction(el, t) {
         e.preventDefault();
         e.stopPropagation();
         mode = 'rotate';
-        const rect = el.getBoundingClientRect();
-        // Center of the element in screen coordinates
-        startX = rect.left + rect.width / 2;
-        startY = rect.top + rect.height / 2;
-        startAngle = t.rotation || 0;
+        
+        const parentRect = els.overlaysContainer.getBoundingClientRect();
+        const cardRot = state.images[state.currentIndex].rotation || 0;
+        const scale = state.currentScale || 1;
+        
+        // Card center in screen space
+        const cardCenterX = parentRect.left + parentRect.width / 2;
+        const cardCenterY = parentRect.top + parentRect.height / 2;
+        
+        // Vector from card center to anchor (top-left of text) in card's local pixels
+        const localX = (t.x / 100) * els.canvas.width;
+        const localY = (t.y / 100) * els.canvas.height;
+        const vX = localX - els.canvas.width / 2;
+        const vY = localY - els.canvas.height / 2;
+        
+        // Rotate vector by cardRot to get screen-relative vector
+        const rad = cardRot * Math.PI / 180;
+        const rvX = vX * Math.cos(rad) - vY * Math.sin(rad);
+        const rvY = vX * Math.sin(rad) + vY * Math.cos(rad);
+        
+        // True anchor position on screen
+        state.rotOriginX = cardCenterX + rvX * scale;
+        state.rotOriginY = cardCenterY + rvY * scale;
+        
+        const dx = e.clientX - state.rotOriginX;
+        const dy = e.clientY - state.rotOriginY;
+        state.startMouseAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+        state.startTextRotation = t.rotation || 0;
         
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
@@ -1156,10 +1172,12 @@ function setupOverlayInteraction(el, t) {
             el.style.height = t.height + '%';
         }
         else if (mode === 'rotate') {
-            const angle = Math.atan2(e.clientY - startY, e.clientX - startX) * 180 / Math.PI;
-            // +90 because our rotate handle is at the TOP (which is -90deg in atan2)
-            // Minus card rotation because container is already rotated!
-            t.rotation = (angle + 90 - cardRot) % 360;
+            const dx = e.clientX - state.rotOriginX;
+            const dy = e.clientY - state.rotOriginY;
+            const currentMouseAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+            const delta = currentMouseAngle - state.startMouseAngle;
+            
+            t.rotation = (state.startTextRotation + delta) % 360;
             el.style.transform = `rotate(${t.rotation}deg)`;
         }
         
