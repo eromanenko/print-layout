@@ -333,16 +333,21 @@
                         <input type="file" id="locNewFontFile" accept=".ttf,.woff" style="display: none;">
                     </div>
 
-                    <div style="display: flex; gap: 15px; align-items: center; background: #fdfdfd; padding: 5px; border-radius: 4px;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <div style="display: flex; gap: 12px; align-items: center; background: #fdfdfd; padding: 5px; border-radius: 4px; border: 1px solid #f0f0f0;">
+                        <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
                             <span style="font-size: 13px; color: #555; font-weight: 500;">Size:</span>
                             <input type="number" id="locNewFontSize" value="20" 
-                                style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; outline: none; font-size: 13px;">
+                                style="width: 45px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; font-size: 13px;">
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end;">
+                        
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px; color: #555; margin-left: 5px;">
+                            <input type="checkbox" id="locNewFontItalic"> <i>Italic</i>
+                        </label>
+                
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end;">
                             <span style="font-size: 13px; color: #555; font-weight: 500;">Color:</span>
                             <input type="color" id="locNewFontColor" value="#000000" 
-                                style="width: 32px; height: 32px; border: 1px solid #ccc; padding: 2px; background: white; cursor: pointer; border-radius: 4px;">
+                                style="width: 28px; height: 28px; border: 1px solid #ccc; padding: 2px; background: white; cursor: pointer; border-radius: 4px;">
                         </div>
                     </div>
 
@@ -378,16 +383,13 @@
                         </svg>
                     </button>
                     <button id="locExportProjectBtn"
-                        style="cursor: pointer; flex: 1; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 36px;"
+                        style="cursor: pointer; flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 36px;"
                         title="Save Project (Images + JSON -> ZIP)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-                            <path
-                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                            </path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
                         </svg>
                     </button>
                     <button id="locExportImagesBtn"
@@ -610,7 +612,7 @@
                     display: none;
                 }
             </style>
-            <div id="locJsonTree" style="padding: 20px; overflow-y: auto; flex: 1;">
+            <div id="locJsonTree" style="padding: 20px; overflow-y: auto; flex: 1; text-align: left; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; line-height: 1.5;">
                 <!-- Rendered JSON will go here -->
             </div>
         </div>

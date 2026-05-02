@@ -82,7 +82,8 @@ const els = {
     toggleFontFormIcon: document.getElementById('locToggleFontFormIcon'),
     fontForm: document.getElementById('locFontForm'),
     pickFontFileBtn: document.getElementById('locPickFontFileBtn'),
-    fontFileName: document.getElementById('locFontFileName')
+    fontFileName: document.getElementById('locFontFileName'),
+    newFontItalic: document.getElementById('locNewFontItalic')
 };
 
 // Listeners
@@ -123,10 +124,16 @@ els.newFontSize.addEventListener('input', updatePreviewStyle);
 els.newFontColor.addEventListener('input', updatePreviewStyle);
 
 els.pickFontFileBtn.addEventListener('click', () => els.newFontFile.click());
-els.newFontFile.addEventListener('change', (e) => {
+els.newFontFile.addEventListener('change', async (e) => {
     const file = e.target.files[0];
-    els.fontFileName.textContent = file ? file.name : 'No file selected';
+    if (file) {
+        els.fontFileName.textContent = file.name;
+    } else {
+        els.fontFileName.textContent = 'No file selected';
+    }
 });
+
+els.newFontItalic.addEventListener('change', updatePreviewStyle);
 
 els.toggleFontFormBtn.addEventListener('click', () => {
     const isHidden = els.fontForm.style.display === 'none';
@@ -297,11 +304,11 @@ function renderJsonToHTML(data) {
     
     if (Array.isArray(data)) {
         if (data.length === 0) return `<span>[]</span>`;
-        let html = `<span>[</span><div style="padding-left: 20px; border-left: 1px solid #444; margin-left: 5px;">`;
+        let html = `<details open><summary style="cursor: pointer; user-select: none;">[</summary><div style="padding-left: 15px; border-left: 1px solid #444; margin-left: 5px;">`;
         data.forEach((item, i) => {
-            html += `<div>${renderJsonToHTML(item)}${i < data.length - 1 ? ',' : ''}</div>`;
+            html += `<div style="text-align: left;">${renderJsonToHTML(item)}${i < data.length - 1 ? ',' : ''}</div>`;
         });
-        html += `</div><span>]</span>`;
+        html += `</div><span>]</span></details>`;
         return html;
     }
     
@@ -309,10 +316,10 @@ function renderJsonToHTML(data) {
         const keys = Object.keys(data);
         if (keys.length === 0) return `<span>{}</span>`;
         
-        let html = `<details open><summary style="cursor: pointer; user-select: none;">{</summary><div style="padding-left: 20px; border-left: 1px solid #444; margin-left: 5px;">`;
+        let html = `<details open><summary style="cursor: pointer; user-select: none;">{</summary><div style="padding-left: 15px; border-left: 1px solid #444; margin-left: 5px;">`;
         keys.forEach((k, i) => {
             const val = data[k];
-            html += `<div><span style="color:#38bdf8">"${k}"</span>: ${renderJsonToHTML(val)}${i < keys.length - 1 ? ',' : ''}</div>`;
+            html += `<div style="text-align: left;"><span style="color:#38bdf8">"${k}"</span>: ${renderJsonToHTML(val)}${i < keys.length - 1 ? ',' : ''}</div>`;
         });
         html += `</div><span>}</span></details>`;
         return html;
@@ -760,7 +767,8 @@ function drawTextOnCanvas(ctx, t, canvasWidth, canvasHeight) {
     ctx.translate(-pxW / 2, -pxH / 2); // Now origin is top-left of the box
 
     const fontSize = getShrunkFontSize(ctx, textContent, font, pxW, pxH);
-    ctx.font = `${fontSize}px "${font.family}"`;
+    const italic = font.italic ? 'italic ' : '';
+    ctx.font = `${italic}${fontSize}px "${font.family}"`;
     ctx.fillStyle = font.color || '#000';
     ctx.textBaseline = 'top';
 
@@ -995,6 +1003,7 @@ async function renderOverlays() {
         const font = state.config.fonts[t.fontId];
         const fontFamily = font ? font.family : 'sans-serif';
         const fontColor = font ? font.color : '#000';
+        const fontStyle = font ? (font.italic ? 'italic' : 'normal') : 'normal';
         const taAlign = t.align || 'center';
         
         const lang = state.config.currentLang;
@@ -1033,7 +1042,7 @@ async function renderOverlays() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
-            <textarea style="flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}'; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; overflow:hidden;">${textContent}</textarea>
+            <textarea style="flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}'; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; overflow:hidden; font-style:${fontStyle};">${textContent}</textarea>
         `;
         
         // Listeners
@@ -1200,7 +1209,8 @@ async function handleAddFont() {
         family: fontFamily,
         size: parseInt(size),
         color: color,
-        base64: base64
+        base64: base64,
+        italic: els.newFontItalic.checked
     };
 
     // Reset inputs
@@ -1249,6 +1259,7 @@ function updatePreviewStyle() {
     if (els.previewOverlay.style.display === 'none') return;
     els.previewText.style.fontSize = els.newFontSize.value + "px";
     els.previewText.style.color = els.newFontColor.value;
+    els.previewText.style.fontStyle = els.newFontItalic.checked ? 'italic' : 'normal';
 }
 
 function injectFont(familyName, base64Url) {
@@ -1269,6 +1280,10 @@ function injectFont(familyName, base64Url) {
 }
 
 
+async function analyzeFontFile(file) {
+    return {};
+}
+
 function resetFontForm(collapse = false) {
     state.editingFontName = null;
     els.newFontName.value = '';
@@ -1277,6 +1292,8 @@ function resetFontForm(collapse = false) {
     els.newFontColor.value = '#000000';
     els.newFontFile.value = '';
     els.fontFileName.textContent = 'No file selected';
+    els.newFontItalic.checked = false;
+
     els.addFontBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Add style
@@ -1335,7 +1352,7 @@ function updateFontsList() {
         `;
         
         // Click to apply font
-        div.addEventListener('click', (e) => {
+        div.addEventListener('click', async (e) => {
             if (e.target.classList.contains('loc-edit-font') || e.target.classList.contains('loc-del-font')) return;
             
             if (state.activeTextId && state.images.length > 0) {
@@ -1345,7 +1362,9 @@ function updateFontsList() {
                     const txt = config.texts.find(t => t.id === state.activeTextId);
                     if (txt) {
                         txt.fontId = name;
-                        renderOverlays();
+                        await renderOverlays();
+                        await redrawCanvas();
+                        autosaveConfig();
                         updateFontsList();
                     }
                 }
@@ -1376,6 +1395,8 @@ function updateFontsList() {
             els.newFontName.disabled = true;
             els.newFontSize.value = fontObj.size;
             els.newFontColor.value = fontObj.color;
+            els.newFontItalic.checked = fontObj.italic || false;
+
             els.newFontFile.value = '';
             els.addFontBtn.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
