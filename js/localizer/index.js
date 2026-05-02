@@ -22,7 +22,7 @@ const state = {
 // UI Elements
 const els = {
     zipInput: document.getElementById('locZipInput'),
-    zipCount: document.getElementById('locZipCount'),
+    pickZipBtn: document.getElementById('locPickZipBtn'),
     galleryContainer: document.getElementById('locGalleryContainer'),
     locPlaceholder: document.getElementById('locPlaceholder'),
     canvas: document.getElementById('locCanvas'),
@@ -88,10 +88,18 @@ const els = {
     conflictModal: document.getElementById('locConflictModal'),
     conflictList: document.getElementById('locConflictList'),
     confirmConflictBtn: document.getElementById('locConfirmConflict'),
-    cancelConflictBtn: document.getElementById('locCancelConflict')
+    cancelConflictBtn: document.getElementById('locCancelConflict'),
+    
+    // Deck Manager
+    manageDeckBtn: document.getElementById('locManageDeckBtn'),
+    deckManagerModal: document.getElementById('locDeckManagerModal'),
+    deckManagerGrid: document.getElementById('locDeckManagerGrid'),
+    closeDeckManagerBtn: document.getElementById('locCloseDeckManager'),
+    saveDeckOrderBtn: document.getElementById('locSaveDeckOrder')
 };
 
 // Listeners
+els.pickZipBtn.addEventListener('click', () => els.zipInput.click());
 els.zipInput.addEventListener('change', handleFilesUpload);
 els.prevBtn.addEventListener('click', () => navigate(-1));
 els.nextBtn.addEventListener('click', () => navigate(1));
@@ -108,6 +116,10 @@ els.cancelConflictBtn.addEventListener('click', () => {
     els.zipInput.value = '';
     setPlaceholderState(null, state.images.length === 0);
 });
+
+els.manageDeckBtn.addEventListener('click', handleOpenDeckManager);
+els.closeDeckManagerBtn.addEventListener('click', () => els.deckManagerModal.style.display = 'none');
+els.saveDeckOrderBtn.addEventListener('click', handleSaveDeckOrder);
 
 function setAlignment(align) {
     if (!state.activeTextId || state.images.length === 0) return;
@@ -634,9 +646,10 @@ function finalizeAppendUpload() {
         }
     });
 
-    // Final UI updates
-    state.images.sort((a, b) => a.name.localeCompare(b.name));
-    els.zipCount.textContent = `(${state.images.length} images)`;
+    // Remove automatic sort to allow manual reordering
+    // state.images.sort((a, b) => a.name.localeCompare(b.name));
+    
+    els.manageDeckBtn.style.display = 'flex';
     
     setPlaceholderState(null, false);
     els.galleryContainer.style.display = 'flex';
@@ -1640,10 +1653,163 @@ async function loadConfigFromFile(file) {
             showToast("Configuration loaded successfully!", "success");
         }
         
+        els.manageDeckBtn.style.display = 'flex';
+        
         updateFontsList();
         renderCurrentCard();
     } catch (error) {
         console.error("Config import error:", error);
         showToast("Error loading config: " + error.message, "error");
     }
+}
+
+// --- Deck Manager & Reordering ---
+let draggedItem = null;
+
+function handleOpenDeckManager() {
+    if (state.images.length === 0) return;
+    
+    els.deckManagerGrid.innerHTML = '';
+    
+    state.images.forEach((img, idx) => {
+        const item = document.createElement('div');
+        item.className = 'loc-deck-item';
+        item.draggable = true;
+        item.dataset.index = idx;
+        
+        item.style.cssText = `
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+            cursor: move;
+            transition: all 0.2s;
+            position: relative;
+            min-width: 60px;
+        `;
+        
+        const thumb = document.createElement('div');
+        thumb.style.cssText = `
+            width: 50px;
+            height: 70px;
+            background-image: url("${img.blobUrl}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 4px;
+            background-color: #1a1a1a;
+        `;
+        
+        const name = document.createElement('div');
+        name.style.cssText = `
+            font-size: 11px;
+            color: #ccc;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        `;
+        name.textContent = img.name;
+        
+        const badge = document.createElement('div');
+        badge.style.cssText = `
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            pointer-events: none;
+        `;
+        badge.textContent = idx + 1;
+        
+        item.appendChild(thumb);
+        item.appendChild(name);
+        item.appendChild(badge);
+        
+        // Drag Events
+        item.addEventListener('dragstart', (e) => {
+            draggedItem = item;
+            item.style.opacity = '0.4';
+            item.style.transform = 'scale(0.95)';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        item.addEventListener('dragend', () => {
+            draggedItem = null;
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1)';
+            const items = els.deckManagerGrid.querySelectorAll('.loc-deck-item');
+            items.forEach(i => i.style.borderColor = '#444');
+        });
+        
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (item !== draggedItem) {
+                item.style.borderColor = '#007bff';
+                item.style.background = '#333';
+            }
+        });
+        
+        item.addEventListener('dragleave', () => {
+            item.style.borderColor = '#444';
+            item.style.background = '#2d2d2d';
+        });
+        
+        item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            item.style.borderColor = '#444';
+            item.style.background = '#2d2d2d';
+            
+            if (item !== draggedItem) {
+                const allItems = Array.from(els.deckManagerGrid.querySelectorAll('.loc-deck-item'));
+                const draggedIdx = allItems.indexOf(draggedItem);
+                const targetIdx = allItems.indexOf(item);
+                
+                if (draggedIdx < targetIdx) {
+                    item.after(draggedItem);
+                } else {
+                    item.before(draggedItem);
+                }
+                
+                updateDeckManagerBadges();
+            }
+        });
+        
+        els.deckManagerGrid.appendChild(item);
+    });
+    
+    els.deckManagerModal.style.display = 'flex';
+}
+
+function updateDeckManagerBadges() {
+    const items = els.deckManagerGrid.querySelectorAll('.loc-deck-item');
+    items.forEach((item, idx) => {
+        const badge = item.querySelector('div:last-child');
+        if (badge) badge.textContent = idx + 1;
+    });
+}
+
+function handleSaveDeckOrder() {
+    const items = Array.from(els.deckManagerGrid.querySelectorAll('.loc-deck-item'));
+    const newOrder = items.map(item => {
+        const oldIdx = parseInt(item.dataset.index);
+        return state.images[oldIdx];
+    });
+    
+    state.images = newOrder;
+    state.currentIndex = 0; // Reset to first card
+    
+    els.deckManagerModal.style.display = 'none';
+    renderCurrentCard();
+    showToast("Deck order updated!", "success");
+    autosaveConfig();
 }

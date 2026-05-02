@@ -237,14 +237,18 @@
             style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
 
 
-            <!-- Deck Upload -->
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div
-                    style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>1. Deck Archive (ZIP) or Images:</b>
-                    <input type="file" id="locZipInput" accept=".zip,image/*" multiple
-                        title="Upload Cards (ZIP or Multiple Images)">
-                    <span id="locZipCount" style="color: #666; font-size: 0.9em;"></span>
+                <div style="background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between;">
+                    <b style="font-size: 0.9em;">1. Deck Management:</b>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="file" id="locZipInput" accept=".zip,image/*" multiple style="display: none;">
+                        <button id="locPickZipBtn" class="loc-secondary-btn" title="Upload Cards (ZIP/Images)" style="padding: 6px; background: #007bff; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; transition: background 0.2s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </button>
+                        <button id="locManageDeckBtn" class="loc-secondary-btn" title="Manage Deck Order" style="display: none; padding: 6px; background: #4b5563; border: none; border-radius: 4px; cursor: pointer; align-items: center; justify-content: center; color: #fff; transition: background 0.2s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -645,6 +649,30 @@
 
     <script type="module" src="js/layout/index.js"></script>
     <script type="module" src="js/localizer/index.js"></script>
+
+    <!-- Deck Manager Modal -->
+    <div id="locDeckManagerModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1200; align-items: center; justify-content: center;">
+        <div style="background: #1e1e1e; color: #fff; width: 80%; height: 80%; border-radius: 12px; border: 1px solid #444; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden;">
+            <div style="padding: 15px 25px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 1.1rem;">Manage Deck Order</h3>
+                    <span style="font-size: 0.85em; color: #94a3b8;">Drag and drop to reorder cards</span>
+                </div>
+                <button id="locCloseDeckManager" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div id="locDeckManagerGrid" style="flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; align-content: start;">
+                <!-- Thumbnails will be injected here -->
+            </div>
+            
+            <div style="padding: 15px 25px; border-top: 1px solid #444; background: #262626; display: flex; justify-content: flex-end;">
+                <button id="locSaveDeckOrder" style="padding: 8px 20px; border-radius: 6px; border: none; background: #007bff; color: #fff; cursor: pointer; font-weight: 500;">Save Order</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Simple script to handle main tab switching
