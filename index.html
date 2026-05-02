@@ -337,6 +337,19 @@
                     
                     <!-- Navigation Controls -->
                     <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <div id="locPatchColorBtn" style="cursor: pointer; width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 4px; display: none; background: #ffffff;" title="Patch Color Palette"></div>
+                            <input type="color" id="locPatchColorPicker" style="display: none;">
+                            <div id="locColorPaletteModal" style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="font-weight: bold; font-size: 14px;">Recent Colors</div>
+                                    <button id="locClosePaletteBtn" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #666;">&times;</button>
+                                </div>
+                                <div id="locPaletteColors" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 25px;"></div>
+                                <button id="locPalettePickNewBtn" style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Pick Custom Color</button>
+                            </div>
+                        </div>
+                        <button id="locAddPatchBtn" style="cursor: pointer; font-size: 1em; background: #fd7e14; color: white; border: none; border-radius: 4px; padding: 0 10px;" title="Add Eraser Patch">+ Add Patch</button>
                         <button id="locAddTextBtn" style="cursor: pointer; font-size: 1em; background: #28a745; color: white; border: none; border-radius: 4px; padding: 0 10px;">+ Add Text</button>
                         <div style="display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
                             <button id="locAlignLeftBtn" title="Align Left" style="cursor: pointer; background: white; border: none; padding: 5px 10px; border-right: 1px solid #ccc;">⬅️</button>

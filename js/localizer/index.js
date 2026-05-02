@@ -13,6 +13,7 @@ const state = {
     },
     currentScale: 1,
     activeTextId: null,
+    activePatchId: null,
     fileHandle: null
 };
 
@@ -31,6 +32,13 @@ const els = {
     nextBtn: document.getElementById('locNextBtn'),
     rotateBtn: document.getElementById('locRotateBtn'),
     addTextBtn: document.getElementById('locAddTextBtn'),
+    addPatchBtn: document.getElementById('locAddPatchBtn'),
+    patchColorBtn: document.getElementById('locPatchColorBtn'),
+    patchColorPicker: document.getElementById('locPatchColorPicker'),
+    colorPaletteModal: document.getElementById('locColorPaletteModal'),
+    paletteColorsContainer: document.getElementById('locPaletteColors'),
+    palettePickNewBtn: document.getElementById('locPalettePickNewBtn'),
+    closePaletteBtn: document.getElementById('locClosePaletteBtn'),
     alignLeftBtn: document.getElementById('locAlignLeftBtn'),
     alignCenterBtn: document.getElementById('locAlignCenterBtn'),
     alignRightBtn: document.getElementById('locAlignRightBtn'),
@@ -117,6 +125,50 @@ els.exportPdfBtn.addEventListener('click', handleExportPdf);
 els.closeJsonModal.addEventListener('click', () => els.jsonModal.style.display = 'none');
 els.jsonModal.addEventListener('click', (e) => {
     if (e.target === els.jsonModal) els.jsonModal.style.display = 'none';
+});
+
+els.addPatchBtn.addEventListener('click', handleAddPatch);
+els.patchColorBtn.addEventListener('click', () => {
+    if (!state.config.patchPalette || state.config.patchPalette.length === 0) {
+        els.patchColorPicker.click();
+    } else {
+        renderPaletteModal();
+        els.colorPaletteModal.style.display = 'block';
+    }
+});
+
+els.closePaletteBtn.addEventListener('click', () => {
+    els.colorPaletteModal.style.display = 'none';
+});
+
+els.palettePickNewBtn.addEventListener('click', () => {
+    els.colorPaletteModal.style.display = 'none';
+    els.patchColorPicker.click();
+});
+
+els.patchColorPicker.addEventListener('input', (e) => {
+    const newColor = e.target.value;
+    
+    // Add to palette
+    if (!state.config.patchPalette) state.config.patchPalette = [];
+    if (!state.config.patchPalette.includes(newColor)) {
+        state.config.patchPalette.push(newColor);
+    }
+    
+    els.patchColorBtn.style.background = newColor;
+
+    if (state.activePatchId && state.images.length > 0) {
+        const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+        if (cardConfig && cardConfig.patches) {
+            const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
+            if (patch) {
+                patch.color = newColor;
+                renderOverlays();
+                redrawCanvas();
+                autosaveConfig();
+            }
+        }
+    }
 });
 
 els.loadConfigBtn.addEventListener('click', async () => {
@@ -584,11 +636,39 @@ function redrawCanvas() {
     els.ctx.drawImage(img, 0, 0);
     
     const cardConfig = state.config.cards[card.name];
-    if (cardConfig && cardConfig.texts) {
-        cardConfig.texts.forEach(t => {
-            drawTextOnCanvas(els.ctx, t, els.canvas.width, els.canvas.height);
-        });
+    if (cardConfig) {
+        if (cardConfig.patches) {
+            cardConfig.patches.forEach(p => {
+                drawPatchOnCanvas(els.ctx, p, els.canvas.width, els.canvas.height);
+            });
+        }
+        if (cardConfig.texts) {
+            cardConfig.texts.forEach(t => {
+                drawTextOnCanvas(els.ctx, t, els.canvas.width, els.canvas.height);
+            });
+        }
     }
+}
+
+function drawPatchOnCanvas(ctx, p, canvasWidth, canvasHeight) {
+    const pxX = (p.x / 100) * canvasWidth;
+    const pxY = (p.y / 100) * canvasHeight;
+    const pxW = (p.width / 100) * canvasWidth;
+    const pxH = (p.height / 100) * canvasHeight;
+
+    ctx.save();
+    
+    // Translate to the center of the patch for rotation
+    const centerX = pxX + pxW / 2;
+    const centerY = pxY + pxH / 2;
+    ctx.translate(centerX, centerY);
+    ctx.rotate((p.rotation || 0) * Math.PI / 180);
+    ctx.translate(-pxW / 2, -pxH / 2); // Now origin is top-left of the box
+
+    ctx.fillStyle = p.color || '#ffffff';
+    ctx.fillRect(0, 0, pxW, pxH);
+
+    ctx.restore();
 }
 
 function getShrunkFontSize(ctx, textContent, font, pxW, pxH) {
@@ -711,31 +791,105 @@ function handleAddText() {
     };
     
     state.config.cards[card.name].texts.push(newText);
-    state.activeTextId = newText.id;
+    setActiveText(newText.id);
     autosaveConfig();
     renderOverlays();
     updateFontsList();
 }
 
+function handleAddPatch() {
+    if (state.images.length === 0) return;
+    const card = state.images[state.currentIndex];
+    
+    if (!state.config.cards[card.name]) {
+        state.config.cards[card.name] = { texts: [], patches: [] };
+    }
+    if (!state.config.cards[card.name].patches) {
+        state.config.cards[card.name].patches = [];
+    }
+    
+    const cardRot = card.rotation || 0;
+    const spawnRot = (360 - cardRot) % 360;
+    
+    const newPatch = {
+        id: 'p_' + Date.now(),
+        x: 30,
+        y: 40,
+        width: 40,
+        height: 10,
+        rotation: spawnRot,
+        color: els.patchColorPicker.value || '#ffffff'
+    };
+    
+    state.config.cards[card.name].patches.push(newPatch);
+    setActivePatch(newPatch.id);
+    autosaveConfig();
+    renderOverlays();
+    redrawCanvas();
+}
+
 function setActiveText(id) {
-    if (state.activeTextId === id) return;
+    if (state.activeTextId === id && state.activePatchId === null) return;
     autosaveConfig();
     state.activeTextId = id;
+    state.activePatchId = null;
+    els.patchColorBtn.style.display = 'none';
+    els.colorPaletteModal.style.display = 'none';
     
-    // Update visuals without re-rendering to keep focus and caret intact
-    const allOverlays = els.overlaysContainer.querySelectorAll('.loc-text-overlay');
+    updateOverlaysVisualState();
+    updateFontsList();
+}
+
+function setActivePatch(id) {
+    if (state.activePatchId === id && state.activeTextId === null) return;
+    autosaveConfig();
+    state.activePatchId = id;
+    state.activeTextId = null;
+    
+    if (id) {
+        els.patchColorBtn.style.display = 'block';
+        const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+        if (cardConfig && cardConfig.patches) {
+            const patch = cardConfig.patches.find(p => p.id === id);
+            if (patch) {
+                els.patchColorBtn.style.background = patch.color || '#ffffff';
+                els.patchColorPicker.value = patch.color || '#ffffff';
+            }
+        }
+    } else {
+        els.patchColorBtn.style.display = 'none';
+        els.colorPaletteModal.style.display = 'none';
+    }
+    
+    updateOverlaysVisualState();
+    updateFontsList();
+}
+
+function updateOverlaysVisualState() {
+    const allOverlays = els.overlaysContainer.querySelectorAll('.loc-text-overlay, .loc-patch-overlay');
     allOverlays.forEach(el => {
-        const isActive = el.dataset.id === id;
-        el.style.border = isActive ? '2px solid #007bff' : '2px dashed #007bff';
-        el.style.boxShadow = isActive ? '0 0 10px rgba(0, 123, 255, 0.5)' : 'none';
-        el.style.zIndex = isActive ? '20' : '1';
+        const id = el.dataset.id;
+        const isActive = (id === state.activeTextId) || (id === state.activePatchId);
+        const isPatch = el.classList.contains('loc-patch-overlay');
+        
+        if (isActive) {
+            el.style.border = isPatch ? '2px solid #fd7e14' : '2px solid #007bff';
+            el.style.boxShadow = isPatch ? '0 0 10px rgba(253, 126, 20, 0.5)' : '0 0 10px rgba(0, 123, 255, 0.5)';
+            el.style.zIndex = '20';
+        } else {
+            el.style.border = isPatch ? '2px dashed #fd7e14' : '2px dashed #007bff';
+            el.style.boxShadow = 'none';
+            el.style.zIndex = isPatch ? '0' : '1';
+        }
         
         el.querySelectorAll('.loc-handle').forEach(h => {
-            h.style.display = isActive ? 'block' : 'none';
+            if (h.classList.contains('loc-info-icon')) {
+                h.style.display = isActive ? 'flex' : 'none';
+            } else {
+                h.style.display = isActive ? 'block' : 'none';
+            }
         });
     });
-    
-    updateFontsList();
 }
 
 function renderOverlays() {
@@ -743,9 +897,52 @@ function renderOverlays() {
     if (state.images.length === 0) return;
     const card = state.images[state.currentIndex];
     const cardConfig = state.config.cards[card.name];
-    if (!cardConfig || !cardConfig.texts) return;
+    if (!cardConfig) return;
     
-    cardConfig.texts.forEach(t => {
+    // Render patches
+    if (cardConfig.patches) {
+        cardConfig.patches.forEach(p => {
+            const isActive = p.id === state.activePatchId;
+            const div = document.createElement('div');
+            div.className = 'loc-patch-overlay';
+            div.dataset.id = p.id;
+            div.style.position = 'absolute';
+            div.style.left = p.x + '%';
+            div.style.top = p.y + '%';
+            div.style.width = p.width + '%';
+            div.style.height = p.height + '%';
+            div.style.transform = `rotate(${p.rotation || 0}deg)`;
+            div.style.border = isActive ? '2px solid #fd7e14' : '2px dashed #fd7e14';
+            div.style.boxShadow = isActive ? '0 0 10px rgba(253, 126, 20, 0.5)' : 'none';
+            div.style.zIndex = isActive ? '20' : '0';
+            div.style.pointerEvents = 'auto';
+            div.style.boxSizing = 'border-box';
+            div.style.background = 'transparent';
+            
+            div.innerHTML = `
+                <div class="loc-drag-handle loc-handle" style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:#fd7e14; border-radius:50%; cursor:grab; z-index:10; display:${isActive?'block':'none'};" title="Drag"></div>
+                <div class="loc-rotate-handle loc-handle" style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:20px; height:20px; background:orange; border-radius:50%; cursor:crosshair; z-index:10; display:${isActive?'block':'none'};" title="Rotate"></div>
+                <div class="loc-resize-handle loc-handle" style="position:absolute; bottom:-10px; right:-10px; width:20px; height:20px; background:blue; border-radius:50%; cursor:nwse-resize; z-index:10; display:${isActive?'block':'none'};" title="Resize"></div>
+                <button class="loc-del-patch loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-size:12px; padding:0; z-index:10; display:${isActive?'block':'none'};">X</button>
+            `;
+            
+            div.addEventListener('mousedown', () => setActivePatch(p.id));
+            div.querySelector('.loc-del-patch').addEventListener('click', (e) => {
+                e.stopPropagation();
+                cardConfig.patches = cardConfig.patches.filter(x => x.id !== p.id);
+                if (state.activePatchId === p.id) setActivePatch(null);
+                autosaveConfig();
+                renderOverlays();
+                redrawCanvas();
+            });
+            
+            setupOverlayInteraction(div, p);
+            els.overlaysContainer.appendChild(div);
+        });
+    }
+    
+    if (cardConfig.texts) {
+        cardConfig.texts.forEach(t => {
         const isActive = t.id === state.activeTextId;
         const div = document.createElement('div');
         div.className = 'loc-text-overlay';
@@ -829,7 +1026,8 @@ function renderOverlays() {
         setupOverlayInteraction(div, t);
         
         els.overlaysContainer.appendChild(div);
-    });
+        });
+    }
 }
 
 function setupOverlayInteraction(el, t) {
@@ -920,11 +1118,14 @@ function setupOverlayInteraction(el, t) {
             t.rotation = (angle + 90 - cardRot) % 360;
             el.style.transform = `rotate(${t.rotation}deg)`;
         }
+        
+        redrawCanvas();
     };
 
     const onUp = () => {
         mode = null;
         autosaveConfig();
+        redrawCanvas();
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     };
@@ -1111,6 +1312,111 @@ function updateFontsList() {
         
         els.fontsList.appendChild(div);
     });
+}
+
+function renderPaletteModal() {
+    els.paletteColorsContainer.innerHTML = '';
+    const palette = state.config.patchPalette || [];
+    
+    if (palette.length === 0) {
+        els.paletteColorsContainer.innerHTML = '<span style="color:#999; font-size:12px;">No colors yet</span>';
+        return;
+    }
+    
+    palette.forEach(color => {
+        const wrap = document.createElement('div');
+        wrap.style.display = 'flex';
+        wrap.style.flexDirection = 'column';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '2px';
+        
+        const btn = document.createElement('button');
+        btn.style.width = '25px';
+        btn.style.height = '25px';
+        btn.style.background = color;
+        btn.style.border = '1px solid #ccc';
+        btn.style.borderRadius = '4px';
+        btn.style.cursor = 'pointer';
+        btn.title = `Apply ${color}`;
+        
+        btn.addEventListener('click', () => {
+            els.patchColorBtn.style.background = color;
+            els.patchColorPicker.value = color;
+            
+            if (state.activePatchId && state.images.length > 0) {
+                const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+                if (cardConfig && cardConfig.patches) {
+                    const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
+                    if (patch) {
+                        patch.color = color;
+                        renderOverlays();
+                        redrawCanvas();
+                        autosaveConfig();
+                    }
+                }
+            }
+            els.colorPaletteModal.style.display = 'none';
+        });
+        
+        const replaceBtn = document.createElement('button');
+        replaceBtn.textContent = 'Replace';
+        replaceBtn.style.fontSize = '9px';
+        replaceBtn.style.padding = '2px 4px';
+        replaceBtn.style.cursor = 'pointer';
+        replaceBtn.style.background = '#ffc107';
+        replaceBtn.style.border = 'none';
+        replaceBtn.style.borderRadius = '3px';
+        replaceBtn.title = `Replace all usages of ${color}`;
+        
+        replaceBtn.addEventListener('click', () => {
+            const tempInput = document.createElement('input');
+            tempInput.type = 'color';
+            tempInput.value = color;
+            tempInput.addEventListener('input', (e) => {
+                const newColor = e.target.value;
+                replaceAllPatchColors(color, newColor);
+            });
+            tempInput.click();
+            els.colorPaletteModal.style.display = 'none';
+        });
+        
+        wrap.appendChild(btn);
+        wrap.appendChild(replaceBtn);
+        els.paletteColorsContainer.appendChild(wrap);
+    });
+}
+
+function replaceAllPatchColors(oldColor, newColor) {
+    if (oldColor === newColor) return;
+    
+    let replacedCount = 0;
+    Object.values(state.config.cards).forEach(card => {
+        if (card.patches) {
+            card.patches.forEach(p => {
+                if (p.color === oldColor) {
+                    p.color = newColor;
+                    replacedCount++;
+                }
+            });
+        }
+    });
+    
+    // Update palette
+    if (state.config.patchPalette) {
+        state.config.patchPalette = state.config.patchPalette.map(c => c === oldColor ? newColor : c);
+        // Remove duplicates if newColor was already in palette
+        state.config.patchPalette = [...new Set(state.config.patchPalette)];
+    }
+    
+    if (els.patchColorBtn.style.background === oldColor || els.patchColorPicker.value === oldColor) {
+        els.patchColorBtn.style.background = newColor;
+        els.patchColorPicker.value = newColor;
+    }
+    
+    autosaveConfig();
+    renderOverlays();
+    redrawCanvas();
+    showToast(`Replaced ${replacedCount} patches with new color!`, "success");
 }
 
 async function loadConfigFromFile(file) {
