@@ -23,6 +23,9 @@ const state = {
 const els = {
     zipInput: document.getElementById('locZipInput'),
     pickZipBtn: document.getElementById('locPickZipBtn'),
+    exportPdfBtn: document.getElementById('locExportPdfBtn'),
+    exportProjectBtn: document.getElementById('locExportProjectBtn'),
+    exportImagesBtn: document.getElementById('locExportImagesBtn'),
     galleryContainer: document.getElementById('locGalleryContainer'),
     locPlaceholder: document.getElementById('locPlaceholder'),
     canvas: document.getElementById('locCanvas'),
@@ -649,7 +652,7 @@ function finalizeAppendUpload() {
     // Remove automatic sort to allow manual reordering
     // state.images.sort((a, b) => a.name.localeCompare(b.name));
     
-    els.manageDeckBtn.style.display = 'flex';
+    updateDeckControls();
     
     setPlaceholderState(null, false);
     els.galleryContainer.style.display = 'flex';
@@ -1402,9 +1405,6 @@ function updateFontsList() {
     els.fontsList.innerHTML = '';
     const fontNames = Object.keys(state.config.fonts);
     
-    const hasConfig = Object.keys(state.config.cards).length > 0 || fontNames.length > 0;
-    els.viewConfigBtn.style.display = hasConfig ? 'block' : 'none';
-    
     // Find active fontId
     let activeFontId = null;
     if (state.activeTextId && state.images.length > 0) {
@@ -1654,6 +1654,7 @@ async function loadConfigFromFile(file) {
         }
         
         els.manageDeckBtn.style.display = 'flex';
+        updateDeckControls();
         
         updateFontsList();
         renderCurrentCard();
@@ -1812,4 +1813,23 @@ function handleSaveDeckOrder() {
     renderCurrentCard();
     showToast("Deck order updated!", "success");
     autosaveConfig();
+}
+
+function updateDeckControls() {
+    const hasImages = state.images.length > 0;
+    const buttons = [
+        els.manageDeckBtn, 
+        els.exportPdfBtn, 
+        els.exportProjectBtn, 
+        els.exportImagesBtn,
+        els.exportConfigBtn,
+        els.viewConfigBtn
+    ];
+    
+    buttons.forEach(btn => {
+        if (!btn) return;
+        btn.disabled = !hasImages;
+        btn.style.opacity = hasImages ? '1' : '0.5';
+        btn.style.cursor = hasImages ? 'pointer' : 'not-allowed';
+    });
 }
