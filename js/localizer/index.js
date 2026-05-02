@@ -14,7 +14,8 @@ const state = {
     currentScale: 1,
     activeTextId: null,
     activePatchId: null,
-    fileHandle: null
+    fileHandle: null,
+    editingFontName: null
 };
 
 // UI Elements
@@ -76,7 +77,12 @@ const els = {
     previewFontBtn: document.getElementById('locPreviewFontBtn'),
     previewOverlay: document.getElementById('locFontPreviewOverlay'),
     previewText: document.getElementById('locFontPreviewText'),
-    closePreviewBtn: document.getElementById('locClosePreviewBtn')
+    closePreviewBtn: document.getElementById('locClosePreviewBtn'),
+    toggleFontFormBtn: document.getElementById('locToggleFontFormBtn'),
+    toggleFontFormIcon: document.getElementById('locToggleFontFormIcon'),
+    fontForm: document.getElementById('locFontForm'),
+    pickFontFileBtn: document.getElementById('locPickFontFileBtn'),
+    fontFileName: document.getElementById('locFontFileName')
 };
 
 // Listeners
@@ -115,6 +121,20 @@ els.previewFontBtn.addEventListener('click', handlePreviewFont);
 els.closePreviewBtn.addEventListener('click', () => els.previewOverlay.style.display = 'none');
 els.newFontSize.addEventListener('input', updatePreviewStyle);
 els.newFontColor.addEventListener('input', updatePreviewStyle);
+
+els.pickFontFileBtn.addEventListener('click', () => els.newFontFile.click());
+els.newFontFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    els.fontFileName.textContent = file ? file.name : 'No file selected';
+});
+
+els.toggleFontFormBtn.addEventListener('click', () => {
+    const isHidden = els.fontForm.style.display === 'none';
+    els.fontForm.style.display = isHidden ? 'flex' : 'none';
+    els.toggleFontFormIcon.innerHTML = isHidden 
+        ? '<polyline points="18 15 12 9 6 15"></polyline>' // Chevron up
+        : '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>'; // Plus
+});
 
 els.exportConfigBtn.addEventListener('click', () => saveConfigToFile(false));
 els.viewConfigBtn.addEventListener('click', handleViewConfig);
@@ -600,7 +620,7 @@ function renderCurrentCard() {
     
     // Load image and draw to canvas
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
         card.loadedImg = img;
         
         // CSS Rotation & Scaling
@@ -624,13 +644,14 @@ function renderCurrentCard() {
         els.rotationContainer.style.height = img.height + 'px';
         els.rotationContainer.style.transform = `scale(${scale}) rotate(${rot}deg)`;
         
-        redrawCanvas();
-        renderOverlays();
+        await redrawCanvas();
+        await renderOverlays();
     };
     img.src = card.blobUrl;
 }
 
-function redrawCanvas() {
+async function redrawCanvas() {
+    await document.fonts.ready;
     if (state.images.length === 0) return;
     const card = state.images[state.currentIndex];
     const img = card.loadedImg;
@@ -899,7 +920,8 @@ function updateOverlaysVisualState() {
     });
 }
 
-function renderOverlays() {
+async function renderOverlays() {
+    await document.fonts.ready;
     els.overlaysContainer.innerHTML = '';
     if (state.images.length === 0) return;
     const card = state.images[state.currentIndex];
@@ -1182,14 +1204,11 @@ async function handleAddFont() {
     };
 
     // Reset inputs
-    els.newFontName.value = '';
-    els.newFontName.disabled = false;
-    els.newFontFile.value = '';
-    els.addFontBtn.textContent = "+ Add Font Style";
+    resetFontForm(true);
     
     autosaveConfig();
     updateFontsList();
-    renderCurrentCard(); // If texts use this font, update canvas
+    await renderCurrentCard(); // If texts use this font, update canvas
 }
 
 async function handlePreviewFont() {
@@ -1216,6 +1235,7 @@ async function handlePreviewFont() {
     }
 
     els.previewText.style.fontFamily = `"${fontFamily}"`;
+    await document.fonts.ready;
     updatePreviewStyle();
     
     els.previewOverlay.style.display = 'block';
@@ -1234,17 +1254,37 @@ function updatePreviewStyle() {
 function injectFont(familyName, base64Url) {
     if (!base64Url) return;
     const styleId = `font-${familyName}`;
-    if (document.getElementById(styleId)) return; // Already injected
-    
-    const style = document.createElement('style');
-    style.id = styleId;
+    let style = document.getElementById(styleId);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = styleId;
+        document.head.appendChild(style);
+    }
     style.textContent = `
         @font-face {
             font-family: "${familyName}";
             src: url("${base64Url}");
         }
     `;
-    document.head.appendChild(style);
+}
+
+
+function resetFontForm(collapse = false) {
+    state.editingFontName = null;
+    els.newFontName.value = '';
+    els.newFontName.disabled = false;
+    els.newFontSize.value = 20;
+    els.newFontColor.value = '#000000';
+    els.newFontFile.value = '';
+    els.fontFileName.textContent = 'No file selected';
+    els.addFontBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add style
+    `;
+    if (collapse) {
+        els.fontForm.style.display = 'none';
+        els.toggleFontFormIcon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+    }
 }
 
 function updateFontsList() {
@@ -1275,13 +1315,18 @@ function updateFontsList() {
         const div = document.createElement('div');
         const isActive = name === activeFontId;
         
-        div.style.cssText = `display:flex; justify-content:space-between; align-items:center; padding: 5px; font-family: "${f.family}"; color: ${f.color}; cursor: pointer; border: ${isActive ? '2px solid #007bff' : '1px solid transparent'}; background: ${isActive ? '#eef6ff' : 'transparent'}; border-radius: 4px; margin-bottom: 2px;`;
+        const isEditing = name === state.editingFontName;
+        
+        div.style.cssText = `display:flex; justify-content:space-between; align-items:center; padding: 5px; font-family: "${f.family}"; color: ${f.color}; cursor: pointer; border: ${isActive ? '2px solid #007bff' : (isEditing ? '2px solid #ffc107' : '1px solid transparent')}; background: ${isActive ? '#eef6ff' : (isEditing ? '#fff8e1' : 'transparent')}; border-radius: 4px; margin-bottom: 2px;`;
         
         div.innerHTML = `
             <span style="pointer-events:none; flex:1;"><b>${name}</b> (${f.size}px)</span>
             <div style="display: flex; gap: 5px;">
-                <button class="loc-edit-font" data-name="${name}" style="background:none; border:none; cursor:pointer; color:#007bff; display: flex; align-items: center; justify-content: center; padding: 2px;" title="Edit Font">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <button class="loc-edit-font" data-name="${name}" style="background:none; border:none; cursor:pointer; color:${isEditing ? 'red' : '#007bff'}; display: flex; align-items: center; justify-content: center; padding: 2px;" title="${isEditing ? 'Cancel Edit' : 'Edit Style'}">
+                    ${isEditing 
+                        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' 
+                        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>'
+                    }
                 </button>
                 <button class="loc-del-font" data-name="${name}" style="color:red; background:none; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center; padding: 2px;" title="Remove Font">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -1317,14 +1362,31 @@ function updateFontsList() {
         
         div.querySelector('.loc-edit-font').addEventListener('click', (e) => {
             const n = e.currentTarget.getAttribute('data-name');
+            
+            if (state.editingFontName === n) {
+                resetFontForm(true);
+                updateFontsList();
+                return;
+            }
+
+            state.editingFontName = n;
             const fontObj = state.config.fonts[n];
             
             els.newFontName.value = n;
-            els.newFontName.disabled = true; // Lock ID during edit
+            els.newFontName.disabled = true;
             els.newFontSize.value = fontObj.size;
             els.newFontColor.value = fontObj.color;
-            els.newFontFile.value = ''; // Don't require re-uploading file
-            els.addFontBtn.textContent = "Save Changes";
+            els.newFontFile.value = '';
+            els.addFontBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Update style
+            `;
+
+            // Open form if hidden
+            els.fontForm.style.display = 'flex';
+            els.toggleFontFormIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
+            
+            updateFontsList();
         });
         
         els.fontsList.appendChild(div);

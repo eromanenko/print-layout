@@ -303,42 +303,61 @@
 
             <!-- Fonts Manager -->
             <div class="controls sidebar-group">
-                <b>4. Font Styles Manager</b>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <b>4. Font Styles Manager</b>
+                    <button id="locToggleFontFormBtn" title="Toggle Font Style Form" style="background: none; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #007bff; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; background: white;">
+                        <svg id="locToggleFontFormIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+                
                 <div id="locFontsList"
-                    style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white;">
+                    style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white; margin-bottom: 5px;">
                     <span style="color:#666; font-size:0.9em; text-align:center;">No custom fonts added</span>
                 </div>
 
-                <div
-                    style="display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px;">
+                <div id="locFontForm"
+                    style="display: none; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 12px; margin-top: 5px;">
+                    
                     <input type="text" id="locNewFontName" placeholder="Style Name (e.g. TitleFont)"
-                        style="padding: 5px;">
-                    <input type="file" id="locNewFontFile" accept=".ttf,.woff" title="Upload TTF/WOFF">
-                    <div style="display:flex; gap: 10px;">
-                        <label style="flex:1;">Size: <input type="number" id="locNewFontSize" value="20"
-                                style="width:50px;"></label>
-                        <label>Color: <input type="color" id="locNewFontColor" value="#000000"></label>
+                        style="padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; background: white; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#007bff'" onblur="this.style.borderColor='#ccc'">
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button id="locPickFontFileBtn" type="button" 
+                            style="cursor: pointer; background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 4px; padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
+                            onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Upload Font
+                        </button>
+                        <span id="locFontFileName" style="font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No file selected</span>
+                        <input type="file" id="locNewFontFile" accept=".ttf,.woff" style="display: none;">
                     </div>
-                    <div style="display:flex; gap: 10px;">
+
+                    <div style="display: flex; gap: 15px; align-items: center; background: #fdfdfd; padding: 5px; border-radius: 4px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                            <span style="font-size: 13px; color: #555; font-weight: 500;">Size:</span>
+                            <input type="number" id="locNewFontSize" value="20" 
+                                style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; outline: none; font-size: 13px;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end;">
+                            <span style="font-size: 13px; color: #555; font-weight: 500;">Color:</span>
+                            <input type="color" id="locNewFontColor" value="#000000" 
+                                style="width: 32px; height: 32px; border: 1px solid #ccc; padding: 2px; background: white; cursor: pointer; border-radius: 4px;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
                         <button id="locPreviewFontBtn"
-                            style="flex:1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
+                            style="flex: 1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; font-weight: 500; transition: background 0.2s;"
+                            onmouseover="this.style.background='#138496'" onmouseout="this.style.background='#17a2b8'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             Preview
                         </button>
                         <button id="locAddFontBtn"
-                            style="flex:2; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Add Font Style
+                            style="flex: 1.5; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; font-weight: 500; transition: background 0.2s;"
+                            onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add style
                         </button>
                     </div>
                 </div>
