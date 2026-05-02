@@ -22,7 +22,7 @@ const els = {
     zipInput: document.getElementById('locZipInput'),
     zipCount: document.getElementById('locZipCount'),
     galleryContainer: document.getElementById('locGalleryContainer'),
-    emptyState: document.getElementById('locEmptyState'),
+    locPlaceholder: document.getElementById('locPlaceholder'),
     canvas: document.getElementById('locCanvas'),
     ctx: document.getElementById('locCanvas').getContext('2d'),
     cardName: document.getElementById('locCardName'),
@@ -453,11 +453,18 @@ async function handleExportPdf() {
     }
 }
 
+function setPlaceholderState(html, isVisible = true) {
+    const el = els.locPlaceholder || document.getElementById('locPlaceholder');
+    if (!el) return;
+    if (html) el.innerHTML = html;
+    el.style.display = isVisible ? 'flex' : 'none';
+}
+
 async function handleFilesUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    els.emptyState.innerHTML = '<p>Loading files...</p>';
+    setPlaceholderState('<p>Loading files...</p>');
     
     try {
         // Cleanup old blob URLs to prevent memory leaks
@@ -520,14 +527,14 @@ async function handleFilesUpload(e) {
         state.images.sort((a, b) => a.name.localeCompare(b.name));
 
         if (state.images.length === 0) {
-            els.emptyState.innerHTML = '<p style="color:red;">No valid images found in ZIP.</p>';
+            setPlaceholderState('<p style="color:red;">No valid images found in ZIP.</p>');
             return;
         }
 
         els.zipCount.textContent = `(${state.images.length} images)`;
         state.currentIndex = 0;
         
-        els.emptyState.style.display = 'none';
+        setPlaceholderState(null, false);
         els.galleryContainer.style.display = 'flex';
         
         renderCurrentCard();
@@ -548,7 +555,7 @@ async function handleFilesUpload(e) {
 
     } catch (error) {
         console.error("Error reading ZIP:", error);
-        els.emptyState.innerHTML = `<p style="color:red;">Error reading ZIP: ${error.message}</p>`;
+        setPlaceholderState(`<p style="color:red;">Error reading ZIP: ${error.message}</p>`);
     }
 }
 
@@ -923,7 +930,9 @@ function renderOverlays() {
                 <div class="loc-drag-handle loc-handle" style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:#fd7e14; border-radius:50%; cursor:grab; z-index:10; display:${isActive?'block':'none'};" title="Drag"></div>
                 <div class="loc-rotate-handle loc-handle" style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:20px; height:20px; background:orange; border-radius:50%; cursor:crosshair; z-index:10; display:${isActive?'block':'none'};" title="Rotate"></div>
                 <div class="loc-resize-handle loc-handle" style="position:absolute; bottom:-10px; right:-10px; width:20px; height:20px; background:blue; border-radius:50%; cursor:nwse-resize; z-index:10; display:${isActive?'block':'none'};" title="Resize"></div>
-                <button class="loc-del-patch loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-size:12px; padding:0; z-index:10; display:${isActive?'block':'none'};">X</button>
+                <button class="loc-del-patch loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; z-index:10; display:${isActive?'block':'none'}; display: flex; align-items: center; justify-content: center; padding: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             `;
             
             div.addEventListener('mousedown', () => setActivePatch(p.id));
@@ -994,9 +1003,13 @@ function renderOverlays() {
             <div class="loc-rotate-handle loc-handle" style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:20px; height:20px; background:orange; border-radius:50%; cursor:crosshair; z-index:10; display:${isActive?'block':'none'};" title="Rotate"></div>
             <div class="loc-resize-handle loc-handle" style="position:absolute; bottom:-10px; right:-10px; width:20px; height:20px; background:blue; border-radius:50%; cursor:nwse-resize; z-index:10; display:${isActive?'block':'none'};" title="Resize"></div>
             
-            <div class="loc-info-icon loc-handle" style="position:absolute; top:-10px; right:15px; width:20px; height:20px; background:#17a2b8; color:white; border-radius:50%; display:${handleDisplay}; align-items:center; justify-content:center; font-size:12px; cursor:help; z-index:10; font-family:sans-serif; font-weight:bold; font-style:italic;" title="${tooltipText.replace(/"/g, '&quot;')}">i</div>
+            <div class="loc-info-icon loc-handle" style="position:absolute; top:-10px; right:15px; width:20px; height:20px; background:#17a2b8; color:white; border-radius:50%; display:${handleDisplay}; align-items:center; justify-content:center; cursor:help; z-index:10;" title="${tooltipText.replace(/"/g, '&quot;')}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
             
-            <button class="loc-del-text loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; font-size:12px; padding:0; z-index:10; display:${isActive?'block':'none'};">X</button>
+            <button class="loc-del-text loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; z-index:10; display:${isActive?'block':'none'}; display: flex; align-items: center; justify-content: center; padding: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
 
             <textarea style="flex:1; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}'; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; overflow:hidden;">${textContent}</textarea>
         `;
@@ -1266,9 +1279,13 @@ function updateFontsList() {
         
         div.innerHTML = `
             <span style="pointer-events:none; flex:1;"><b>${name}</b> (${f.size}px)</span>
-            <div>
-                <button class="loc-edit-font" data-name="${name}" style="background:none; border:none; cursor:pointer; color:#007bff; font-weight:bold; padding:0 5px;" title="Edit Font">Edit</button>
-                <button class="loc-del-font" data-name="${name}" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold; padding:0 5px;" title="Remove Font">X</button>
+            <div style="display: flex; gap: 5px;">
+                <button class="loc-edit-font" data-name="${name}" style="background:none; border:none; cursor:pointer; color:#007bff; display: flex; align-items: center; justify-content: center; padding: 2px;" title="Edit Font">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="loc-del-font" data-name="${name}" style="color:red; background:none; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center; padding: 2px;" title="Remove Font">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
             </div>
         `;
         
@@ -1359,8 +1376,12 @@ function renderPaletteModal() {
         });
         
         const replaceBtn = document.createElement('button');
-        replaceBtn.textContent = 'Replace';
-        replaceBtn.style.fontSize = '9px';
+        replaceBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        `;
+        replaceBtn.style.display = 'flex';
+        replaceBtn.style.alignItems = 'center';
+        replaceBtn.style.justifyContent = 'center';
         replaceBtn.style.padding = '2px 4px';
         replaceBtn.style.cursor = 'pointer';
         replaceBtn.style.background = '#ffc107';

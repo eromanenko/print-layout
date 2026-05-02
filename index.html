@@ -20,8 +20,12 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>Print Layout Generator</h2>
         <div class="main-tabs" style="display: flex; gap: 10px;">
-            <button class="main-tab-btn active" data-target="tab-print-layout" style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #007bff; color: white; font-weight: bold;">Print Layout</button>
-            <button class="main-tab-btn" data-target="tab-localizer" style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; color: #333;">Card Localizer</button>
+            <button class="main-tab-btn active" data-target="tab-print-layout"
+                style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #007bff; color: white; font-weight: bold;">Print
+                Layout</button>
+            <button class="main-tab-btn" data-target="tab-localizer"
+                style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; color: #333;">Card
+                Localizer</button>
         </div>
     </div>
 
@@ -30,62 +34,48 @@
         style="display: flex; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
         <div class="sidebar"
             style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
-            <p class="instructions" id="plInstructions" style="margin: 0;">
-                <b>Print Layout Generator:</b> Upload card images to generate a ready-to-print PDF.
-            </p>
 
-            <div class="controls" id="plControlsContainer" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Language:</span>
+
+            <div class="controls sidebar-group" id="plControlsContainer">
+                <label class="checkbox-container"><span>Language:</span>
                     <select id="plLangSelect" style="width: 120px;">
                         <option value="en">English</option>
                         <option value="ru">Русский</option>
                         <option value="ua">Українська</option>
                     </select>
                 </label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Page Size:</span>
+                <label class="checkbox-container"><span>Page Size:</span>
                     <select id="plPageSize" style="width: 120px;">
                         <option value="A4">A4</option>
                         <option value="A3">A3</option>
                         <option value="Letter">Letter</option>
                     </select>
                 </label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Orientation:</span>
+                <label class="checkbox-container"><span>Orientation:</span>
                     <select id="plOrientation" style="width: 120px;">
                         <option value="portrait">Portrait</option>
                         <option value="landscape">landscape</option>
                     </select>
                 </label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Background:</span>
+                <label class="checkbox-container"><span>Background:</span>
                     <input type="color" id="plPageBgColor" value="#ffffff"
                         style="width: 60px; height: 25px; padding: 0;">
                 </label>
             </div>
 
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Card Width
-                        (mm):</span> <input type="number" id="plCardWidth" value="63" min="10" step="1"
-                        style="width: 60px;"></label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Card Height
-                        (mm):</span> <input type="number" id="plCardHeight" value="88" min="10" step="1"
-                        style="width: 60px;"></label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Page Margins
-                        (mm):</span> <input type="number" id="plPageMargins" value="5" min="0" step="1"
-                        style="width: 60px;"></label>
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Gap (mm):</span>
-                    <input type="number" id="plCardGaps" value="0" min="0" step="1" style="width: 60px;"></label>
+            <div class="controls sidebar-group">
+                <label class="checkbox-container"><span>Card Width (mm):</span> <input type="number" id="plCardWidth"
+                        value="63" min="10" step="1" style="width: 60px;"></label>
+                <label class="checkbox-container"><span>Card Height (mm):</span> <input type="number" id="plCardHeight"
+                        value="88" min="10" step="1" style="width: 60px;"></label>
+                <label class="checkbox-container"><span>Page Margins (mm):</span> <input type="number"
+                        id="plPageMargins" value="5" min="0" step="1" style="width: 60px;"></label>
+                <label class="checkbox-container"><span>Gap (mm):</span> <input type="number" id="plCardGaps" value="0"
+                        min="0" step="1" style="width: 60px;"></label>
             </div>
 
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container"
-                    style="display:flex; justify-content:space-between; align-items:center;"><span>Back Type:</span>
+            <div class="controls sidebar-group">
+                <label class="checkbox-container"><span>Back Type:</span>
                     <select id="plBackType" style="width: 120px;">
                         <option value="same">Same for all</option>
                         <option value="different">Different backs</option>
@@ -196,14 +186,12 @@
             </div>
 
             <div class="controls" id="plFilesContainer" style="display:flex; flex-direction:column; gap:12px;">
-                <div id="plBackUploadContainer"
-                    style="display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                <div id="plBackUploadContainer" class="sidebar-group">
                     <b>Global Back Image:</b>
                     <input type="file" id="plBackFileInput" accept="image/*" title="Upload Back Image">
                     <span id="plBackFileCount" style="color: #666; font-size: 0.9em;"></span>
                 </div>
-                <div
-                    style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                <div class="sidebar-group">
                     <b id="plFrontsLabel">Front Images (or ZIP):</b>
                     <input type="file" id="plFacesFileInput" accept="image/*,.zip" multiple title="Upload Front Images">
                     <span id="plFacesFileCount" style="color: #666; font-size: 0.9em;"></span>
@@ -222,20 +210,19 @@
             </div>
         </div>
 
-        <div class="main-content"
-            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column;">
-            
+        <div class="main-content">
+
             <!-- Preview Mode Toggle -->
-            <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+            <div id="plModeToggleContainer" style="display: none; justify-content: center; margin-bottom: 15px;">
                 <div class="mode-toggle" id="plPreviewModeToggle">
                     <button class="mode-btn active" data-mode="pairs" title="Show pairs grid">Pairs Grid</button>
                     <button class="mode-btn" data-mode="layout" title="Show page layout">Page Layout</button>
                 </div>
             </div>
 
-            <div id="plPreviewContainer"
-                style="flex: 1; text-align: center; color: #666; padding: 20px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow-y: auto; flex-direction: column;">
-                <p>Upload images to generate PDF</p>
+            <div id="plPreviewContainer" class="workspace-placeholder" style="overflow-y: auto;">
+                <p style="font-size: 1.2em; margin-bottom: 10px;"><b>No cards loaded</b></p>
+                <p>Upload images or a ZIP archive to generate your print layout</p>
             </div>
         </div>
     </div> <!-- End Print Layout Tab -->
@@ -243,44 +230,68 @@
     <!-- CARD LOCALIZER TAB -->
     <div id="tab-localizer" class="main-tab-content"
         style="display: none; gap: 20px; align-items: stretch; min-height: 0; flex: 1;">
-        
+
         <!-- Localizer Sidebar -->
         <div class="sidebar"
             style="flex: 0 0 320px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
-            <p class="instructions" style="margin: 0;">
-                <b>Card Localizer:</b> Upload a ZIP of cards to add localized text.
-            </p>
 
-            <!-- Config IO -->
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>1. Configuration (JSON):</b>
-                    <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
-                        <button id="locLoadConfigBtn" style="cursor: pointer; flex: 1; padding: 5px;">Load Config</button>
-                        <input type="file" id="locConfigInput" accept=".json" style="display: none;">
-                        <button id="locViewConfigBtn" style="cursor: pointer; padding: 5px; display: none; background: #6c757d; color: white; border: none; border-radius: 4px;" title="View JSON Config">👁️</button>
-                    </div>
-                    <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
-                        <button id="locExportConfigBtn" style="cursor: pointer; flex: 1; padding: 5px; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold;">Save Config</button>
-                        <label style="font-size: 0.9em; cursor: pointer; flex: 1; display: flex; align-items: center; gap: 5px;">
-                            <input type="checkbox" id="locAutosaveBtn" /> Autosave
-                        </label>
-                    </div>
-                </div>
-            </div>
 
             <!-- Deck Upload -->
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>2. Deck Archive (ZIP) or Images:</b>
-                    <input type="file" id="locZipInput" accept=".zip,image/*" multiple title="Upload Cards (ZIP or Multiple Images)">
+                <div
+                    style="display: flex; flex-direction: column; gap: 5px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    <b>1. Deck Archive (ZIP) or Images:</b>
+                    <input type="file" id="locZipInput" accept=".zip,image/*" multiple
+                        title="Upload Cards (ZIP or Multiple Images)">
                     <span id="locZipCount" style="color: #666; font-size: 0.9em;"></span>
                 </div>
             </div>
 
+            <!-- Config IO -->
+            <div class="controls sidebar-group">
+                <b>2. Configuration (JSON):</b>
+                <div style="display:flex; gap: 8px; align-items: center;">
+                    <button id="locLoadConfigBtn" title="Load Config"
+                        style="cursor: pointer; width: 40px; padding: 5px; display: flex; align-items: center; justify-content: center; background: #007bff; color: white; border: none; border-radius: 4px; height: 30px; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                    <input type="file" id="locConfigInput" accept=".json" style="display: none;">
+
+                    <button id="locExportConfigBtn" title="Save Config"
+                        style="cursor: pointer; width: 40px; padding: 5px; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 30px; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </button>
+
+                    <button id="locViewConfigBtn" title="View JSON Config"
+                        style="cursor: pointer; width: 40px; padding: 5px; display: none; background: #6c757d; color: white; border: none; border-radius: 4px; align-items: center; justify-content: center; height: 30px; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+
+                    <label
+                        style="font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-left: 5px;"
+                        title="Toggle Autosave">
+                        <input type="checkbox" id="locAutosaveBtn" /> Autosave
+                    </label>
+                </div>
+            </div>
+
             <!-- Language Switcher -->
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <label class="checkbox-container" style="display:flex; justify-content:space-between; align-items:center; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+            <div class="controls sidebar-group">
+                <label class="checkbox-container" style="border: none; padding: 0; background: transparent;">
                     <b>3. Current Language:</b>
                     <select id="locLangSelect" style="width: 100px;">
                         <option value="en">English</option>
@@ -291,111 +302,294 @@
             </div>
 
             <!-- Fonts Manager -->
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display: flex; flex-direction: column; gap: 10px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>4. Font Styles Manager</b>
-                    <div id="locFontsList" style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white;">
-                        <span style="color:#666; font-size:0.9em; text-align:center;">No custom fonts added</span>
+            <div class="controls sidebar-group">
+                <b>4. Font Styles Manager</b>
+                <div id="locFontsList"
+                    style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white;">
+                    <span style="color:#666; font-size:0.9em; text-align:center;">No custom fonts added</span>
+                </div>
+
+                <div
+                    style="display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px;">
+                    <input type="text" id="locNewFontName" placeholder="Style Name (e.g. TitleFont)"
+                        style="padding: 5px;">
+                    <input type="file" id="locNewFontFile" accept=".ttf,.woff" title="Upload TTF/WOFF">
+                    <div style="display:flex; gap: 10px;">
+                        <label style="flex:1;">Size: <input type="number" id="locNewFontSize" value="20"
+                                style="width:50px;"></label>
+                        <label>Color: <input type="color" id="locNewFontColor" value="#000000"></label>
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px;">
-                        <input type="text" id="locNewFontName" placeholder="Style Name (e.g. TitleFont)" style="padding: 5px;">
-                        <input type="file" id="locNewFontFile" accept=".ttf,.woff" title="Upload TTF/WOFF">
-                        <div style="display:flex; gap: 10px;">
-                            <label style="flex:1;">Size: <input type="number" id="locNewFontSize" value="20" style="width:50px;"></label>
-                            <label>Color: <input type="color" id="locNewFontColor" value="#000000"></label>
-                        </div>
-                        <div style="display:flex; gap: 10px;">
-                            <button id="locPreviewFontBtn" style="flex:1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px;">Preview</button>
-                            <button id="locAddFontBtn" style="flex:2; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px;">+ Add Font Style</button>
-                        </div>
+                    <div style="display:flex; gap: 10px;">
+                        <button id="locPreviewFontBtn"
+                            style="flex:1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            Preview
+                        </button>
+                        <button id="locAddFontBtn"
+                            style="flex:2; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Font Style
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Export Options -->
-            <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display: flex; flex-direction: column; gap: 10px; background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
-                    <b>5. Export & Save</b>
-                    <button id="locExportProjectBtn" style="cursor: pointer; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; font-weight: bold;">📦 Save Project (Images + JSON)</button>
-                    <button id="locExportImagesBtn" style="cursor: pointer; padding: 8px; background: #6f42c1; color: white; border: none; border-radius: 4px; font-weight: bold;">🖼️ Export Rendered Images (ZIP)</button>
-                    <button id="locExportPdfBtn" style="cursor: pointer; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold;">📄 Send to Print Layout</button>
-                    <span id="locExportStatus" style="font-size: 0.9em; color: #666; text-align: center; display: none;"></span>
+            <div class="controls sidebar-group">
+                <b>5. Export & Save</b>
+                <div style="display: flex; gap: 8px;">
+                    <button id="locExportPdfBtn"
+                        style="cursor: pointer; flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 36px;"
+                        title="Send to Print Layout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                    </button>
+                    <button id="locExportProjectBtn"
+                        style="cursor: pointer; flex: 1; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 36px;"
+                        title="Save Project (Images + JSON -> ZIP)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button id="locExportImagesBtn"
+                        style="cursor: pointer; flex: 1; padding: 8px; background: #6f42c1; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 36px;"
+                        title="Export Rendered Images (ZIP)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
                 </div>
+                <span id="locExportStatus"
+                    style="font-size: 0.9em; color: #666; text-align: center; display: none;"></span>
             </div>
 
         </div>
 
         <!-- Localizer Main Content (Gallery) -->
-        <div class="main-content"
-            style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #eee;">
-            
-            <div id="locGalleryContainer" style="display: none; width: 100%; height: 100%; position: relative; flex-direction: column; align-items: center;">
+        <div class="main-content">
+
+            <div id="locPlaceholder" class="workspace-placeholder">
+                <p style="font-size: 1.2em; margin-bottom: 10px;"><b>No project loaded</b></p>
+                <p>Upload a ZIP of cards or multiple images to start localizing</p>
+            </div>
+
+            <div id="locGalleryContainer"
+                style="display: none; width: 100%; height: 100%; position: relative; flex-direction: column; align-items: center;">
                 <!-- Toolbar -->
-                <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; align-items: center;">
+                <div
+                    style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; align-items: center;">
                     <span id="locCardName" style="font-weight: bold; font-size: 1.2em;">Card Name</span>
-                    
+
                     <!-- Navigation Controls -->
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <div style="position: relative; display: flex; align-items: center;">
-                            <div id="locPatchColorBtn" style="cursor: pointer; width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 4px; display: none; background: #ffffff;" title="Patch Color Palette"></div>
+                            <div id="locPatchColorBtn"
+                                style="cursor: pointer; width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 4px; display: none; background: #ffffff;"
+                                title="Patch Color Palette"></div>
                             <input type="color" id="locPatchColorPicker" style="display: none;">
-                            <div id="locColorPaletteModal" style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div id="locColorPaletteModal"
+                                style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <div style="font-weight: bold; font-size: 14px;">Recent Colors</div>
-                                    <button id="locClosePaletteBtn" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #666;">&times;</button>
+                                    <button id="locClosePaletteBtn"
+                                        style="background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; padding: 0;"
+                                        title="Close">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div id="locPaletteColors" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 25px;"></div>
-                                <button id="locPalettePickNewBtn" style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Pick Custom Color</button>
+                                <div id="locPaletteColors"
+                                    style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 25px;">
+                                </div>
+                                <button id="locPalettePickNewBtn"
+                                    style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Pick Custom Color
+                                </button>
                             </div>
                         </div>
-                        <button id="locAddPatchBtn" style="cursor: pointer; font-size: 1em; background: #fd7e14; color: white; border: none; border-radius: 4px; padding: 0 10px;" title="Add Eraser Patch">+ Add Patch</button>
-                        <button id="locAddTextBtn" style="cursor: pointer; font-size: 1em; background: #28a745; color: white; border: none; border-radius: 4px; padding: 0 10px;">+ Add Text</button>
-                        <div style="display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
-                            <button id="locAlignLeftBtn" title="Align Left" style="cursor: pointer; background: white; border: none; padding: 5px 10px; border-right: 1px solid #ccc;">⬅️</button>
-                            <button id="locAlignCenterBtn" title="Align Center" style="cursor: pointer; background: white; border: none; padding: 5px 10px; border-right: 1px solid #ccc;">↔️</button>
-                            <button id="locAlignRightBtn" title="Align Right" style="cursor: pointer; background: white; border: none; padding: 5px 10px;">➡️</button>
+                        <button id="locAddPatchBtn"
+                            style="cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fd7e14; color: white; border: none; border-radius: 4px; padding: 0 10px;"
+                            title="Add Eraser Patch">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="margin-right: 2px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            </svg>
+                        </button>
+                        <div style="display: flex; align-items: center;">
+                            <button id="locAddTextBtn" title="Add Translated Text (+A)"
+                                style="cursor: pointer; background: #28a745; color: white; border: none; padding: 0 10px; border-right: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-weight: bold; font-size: 16px; display: flex; align-items: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round" style="margin-right: 1px;">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    A
+                                </span>
+                            </button>
+                            <button id="locAlignLeftBtn" title="Align Left"
+                                style="cursor: pointer; background: white; border: none; padding: 0 8px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="17" y1="10" x2="3" y2="10"></line>
+                                    <line x1="21" y1="6" x2="3" y2="6"></line>
+                                    <line x1="21" y1="14" x2="3" y2="14"></line>
+                                    <line x1="17" y1="18" x2="3" y2="18"></line>
+                                </svg>
+                            </button>
+                            <button id="locAlignCenterBtn" title="Align Center"
+                                style="cursor: pointer; background: white; border: none; padding: 0 8px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="18" y1="10" x2="6" y2="10"></line>
+                                    <line x1="21" y1="6" x2="3" y2="6"></line>
+                                    <line x1="21" y1="14" x2="3" y2="14"></line>
+                                    <line x1="18" y1="18" x2="6" y2="18"></line>
+                                </svg>
+                            </button>
+                            <button id="locAlignRightBtn" title="Align Right"
+                                style="cursor: pointer; background: white; border: none; padding: 0 8px; display: flex; align-items: center; color: #333;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="21" y1="10" x2="7" y2="10"></line>
+                                    <line x1="21" y1="6" x2="3" y2="6"></line>
+                                    <line x1="21" y1="14" x2="3" y2="14"></line>
+                                    <line x1="21" y1="18" x2="7" y2="18"></line>
+                                </svg>
+                            </button>
                         </div>
-                        <div style="width: 10px;"></div>
-                        <button id="locPrevBtn" style="cursor: pointer; font-size: 1em;">&larr; Prev</button>
-                        <button id="locRotateBtn" style="cursor: pointer; font-size: 1em;" title="Rotate Right">↻ Rotate</button>
-                        <button id="locNextBtn" style="cursor: pointer; font-size: 1em;">Next &rarr;</button>
+                        <div style="width: 5px;"></div>
+                        <div style="display: flex; gap: 5px; height: 30px;">
+                            <button id="locPrevBtn"
+                                style="cursor: pointer; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; color: #333;"
+                                title="Previous Card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                            </button>
+                            <button id="locRotateBtn"
+                                style="cursor: pointer; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; color: #333;"
+                                title="Rotate View Right">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M23 4v6h-6"></path>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                </svg>
+                            </button>
+                            <button id="locNextBtn"
+                                style="cursor: pointer; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; color: #333;"
+                                title="Next Card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <span><span id="locCurrentIndex">0</span> / <span id="locTotalCards">0</span></span>
                 </div>
 
                 <!-- Workspace / Canvas Wrapper -->
-                <div id="locWorkspace" style="flex: 1; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #e9ecef; border: 1px solid #ccc; overflow: hidden;">
-                    <div id="locRotationContainer" style="position: relative; transform-origin: center center; flex-shrink: 0;">
-                        <canvas id="locCanvas" style="display: block; box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: white; max-width: none; max-height: none;"></canvas>
-                        <div id="locOverlaysContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                <div id="locWorkspace"
+                    style="flex: 1; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #e9ecef; border: 1px solid #ccc; overflow: hidden;">
+                    <div id="locRotationContainer"
+                        style="position: relative; transform-origin: center center; flex-shrink: 0;">
+                        <canvas id="locCanvas"
+                            style="display: block; box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: white; max-width: none; max-height: none;"></canvas>
+                        <div id="locOverlaysContainer"
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        </div>
                     </div>
-                    
+
                     <!-- Font Preview Overlay -->
-                    <div id="locFontPreviewOverlay" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 5px; background: rgba(255,255,255,0.3); border: 1px dashed #888; cursor: move; user-select: none; z-index: 100;">
-                        <div id="locFontPreviewText" contenteditable="true" style="min-width: 50px; outline: none; white-space: pre-wrap; cursor: text;">Sample</div>
-                        <button id="locClosePreviewBtn" style="position: absolute; top: -10px; right: -10px; width: 20px; height: 20px; padding: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; z-index: 101;">X</button>
+                    <div id="locFontPreviewOverlay"
+                        style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 5px; background: rgba(255,255,255,0.3); border: 1px dashed #888; cursor: move; user-select: none; z-index: 100;">
+                        <div id="locFontPreviewText" contenteditable="true"
+                            style="min-width: 50px; outline: none; white-space: pre-wrap; cursor: text;">Sample</div>
+                        <button id="locClosePreviewBtn"
+                            style="position: absolute; top: -10px; right: -10px; width: 20px; height: 20px; padding: 0; background: red; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; z-index: 101;">X</button>
                     </div>
                 </div>
-            </div>
-
-            <div id="locEmptyState" style="color: #666; text-align: center;">
-                <p>Upload a ZIP file to start localizing.</p>
             </div>
         </div>
     </div> <!-- End Localizer Tab -->
 
     <!-- JSON Config Viewer Modal -->
-    <div id="locJsonModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: #1e1e1e; color: #d4d4d4; width: 80%; height: 80%; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; font-family: 'Consolas', 'JetBrains Mono', monospace; font-size: 14px;">
-            <div style="padding: 10px 20px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+    <div id="locJsonModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div
+            style="background: #1e1e1e; color: #d4d4d4; width: 80%; height: 80%; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; font-family: 'Consolas', 'JetBrains Mono', monospace; font-size: 14px;">
+            <div
+                style="padding: 10px 20px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; color: #fff;">JSON Configuration</h3>
-                <button id="locCloseJsonModal" style="background: transparent; border: none; color: #fff; cursor: pointer; font-size: 16px;">✖</button>
+                <button id="locCloseJsonModal"
+                    style="background: transparent; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"
+                    title="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
             <style>
-                #locJsonTree details > summary { list-style: none; }
-                #locJsonTree details > summary::-webkit-details-marker { display: none; }
+                #locJsonTree details>summary {
+                    list-style: none;
+                }
+
+                #locJsonTree details>summary::-webkit-details-marker {
+                    display: none;
+                }
             </style>
             <div id="locJsonTree" style="padding: 20px; overflow-y: auto; flex: 1;">
                 <!-- Rendered JSON will go here -->
@@ -431,7 +625,7 @@
                     btn.style.background = '#007bff';
                     btn.style.color = 'white';
                     btn.style.fontWeight = 'bold';
-                    
+
                     const targetId = btn.getAttribute('data-target');
                     const targetContent = document.getElementById(targetId);
                     targetContent.style.display = 'flex';

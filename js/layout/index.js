@@ -133,8 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPreviewPairs = (previewContainer) => {
         const config = getConfig();
         previewContainer.innerHTML = '';
-        previewContainer.style.border = 'none';
-        previewContainer.style.background = 'transparent';
         previewContainer.style.display = 'flex';
         previewContainer.style.flexDirection = 'row';
         previewContainer.style.flexWrap = 'wrap';
@@ -291,18 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (config.orientation === 'landscape') {
             [pageWidth, pageHeight] = [pageHeight, pageWidth];
         }
-
-        // scale down to fit container width. Make it slightly smaller so 2 pages can fit side-by-side
-        const scale = Math.min(380 / pageWidth, 600 / pageHeight); 
         
         previewContainer.innerHTML = '';
-        previewContainer.style.border = 'none';
-        previewContainer.style.background = '#e9ecef';
         previewContainer.style.display = 'flex';
         previewContainer.style.flexDirection = 'row';
         previewContainer.style.flexWrap = 'wrap';
         previewContainer.style.alignItems = 'flex-start';
         previewContainer.style.justifyContent = 'center';
+        previewContainer.style.gap = '30px';
+
+        // scale down to fit container width. Make it slightly smaller so 2 pages can fit side-by-side
+        const scale = Math.min(380 / pageWidth, 600 / pageHeight); 
+        
         previewContainer.style.gap = '30px';
 
         const cardW = config.cardWidth;
@@ -440,6 +438,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateAll = () => {
         checkProportions();
         updateGenerateBtn();
+        
+        const toggleContainer = document.getElementById('plModeToggleContainer');
+        if (toggleContainer) {
+            toggleContainer.style.display = loadedFaces.length > 0 ? 'flex' : 'none';
+        }
+        
         renderPreview();
     };
 

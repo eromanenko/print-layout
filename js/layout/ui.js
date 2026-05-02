@@ -109,21 +109,18 @@ export function initUI() {
 
 const translations = {
     en: {
-        plInstructions: "<b>Print Layout Generator:</b> Upload card images to generate a ready-to-print PDF.",
         frontsSame: "Front Images (or ZIP):",
         frontsDiff: "Images (Interleaved: Front, Back, Front... or ZIP):",
         warnStretch: "⚠️ Warning: Image proportions do not match card size. Images will be stretched to fit.",
         btnGenerate: "Generate PDF"
     },
     ru: {
-        plInstructions: "<b>Генератор раскладок для печати:</b> Загрузите изображения карт для создания готового к печати PDF.",
         frontsSame: "Изображения лиц (или ZIP):",
         frontsDiff: "Изображения (Чередуются: Лицо, Рубашка... или ZIP):",
         warnStretch: "⚠️ Внимание: Пропорции изображений не совпадают с заданным размером. Картинки будут растянуты.",
         btnGenerate: "Создать PDF"
     },
     ua: {
-        plInstructions: "<b>Генератор розкладок для друку:</b> Завантажте зображення карт для створення готового до друку PDF.",
         frontsSame: "Зображення лиць (або ZIP):",
         frontsDiff: "Зображення (Черегуються: Лице, Рубашка... або ZIP):",
         warnStretch: "⚠️ Увага: Пропорції зображень не збігаються із заданим розміром. Картинки будуть розтягнуті.",
@@ -135,8 +132,6 @@ export function updateLanguage() {
     const lang = document.getElementById('plLangSelect').value;
     const t = translations[lang];
     if (!t) return;
-    
-    document.getElementById('plInstructions').innerHTML = t.plInstructions;
     
     const backType = document.getElementById('plBackType').value;
     document.getElementById('plFrontsLabel').innerText = backType === 'different' ? t.frontsDiff : t.frontsSame;
