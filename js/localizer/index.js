@@ -5,7 +5,7 @@ const state = {
     images: [], // { name, blobUrl, rotation }
     currentIndex: 0,
     config: {
-        version: "1.0",
+        version: "0.5.0",
         languages: ["en", "ua", "ru"],
         currentLang: "en",
         fonts: {}, // { "TitleFont": { family: "TitleFont", size: 20, color: "#000", base64: "data:..." } }
@@ -15,7 +15,8 @@ const state = {
     activeTextId: null,
     activePatchId: null,
     fileHandle: null,
-    editingFontName: null
+    editingFontName: null,
+    pendingUpload: null // { newImages, newConfig, conflicts }
 };
 
 // UI Elements
@@ -83,7 +84,11 @@ const els = {
     fontForm: document.getElementById('locFontForm'),
     pickFontFileBtn: document.getElementById('locPickFontFileBtn'),
     fontFileName: document.getElementById('locFontFileName'),
-    newFontItalic: document.getElementById('locNewFontItalic')
+    newFontItalic: document.getElementById('locNewFontItalic'),
+    conflictModal: document.getElementById('locConflictModal'),
+    conflictList: document.getElementById('locConflictList'),
+    confirmConflictBtn: document.getElementById('locConfirmConflict'),
+    cancelConflictBtn: document.getElementById('locCancelConflict')
 };
 
 // Listeners
@@ -95,6 +100,14 @@ els.addTextBtn.addEventListener('click', handleAddText);
 els.alignLeftBtn.addEventListener('click', () => setAlignment('left'));
 els.alignCenterBtn.addEventListener('click', () => setAlignment('center'));
 els.alignRightBtn.addEventListener('click', () => setAlignment('right'));
+
+els.confirmConflictBtn.addEventListener('click', finalizeAppendUpload);
+els.cancelConflictBtn.addEventListener('click', () => {
+    state.pendingUpload = null;
+    els.conflictModal.style.display = 'none';
+    els.zipInput.value = '';
+    setPlaceholderState(null, state.images.length === 0);
+});
 
 function setAlignment(align) {
     if (!state.activeTextId || state.images.length === 0) return;
@@ -255,6 +268,7 @@ async function autosaveConfig() {
 }
 
 async function saveConfigToFile(silent = false) {
+    state.config.version = "0.5.0";
     if (!window.showSaveFilePicker) {
         if (silent) return; // Cannot autosave silently without File System Access API
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.config, null, 2));
@@ -491,99 +505,148 @@ async function handleFilesUpload(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setPlaceholderState('<p>Loading files...</p>');
+    setPlaceholderState('<p>Processing files...</p>');
+    
+    let newImages = [];
+    let newConfig = null;
+    let conflicts = [];
     
     try {
-        // Cleanup old blob URLs to prevent memory leaks
-        state.images.forEach(img => URL.revokeObjectURL(img.blobUrl));
-        state.images = [];
-
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             
             if (file.name.toLowerCase().endsWith('.zip')) {
-                // Handle ZIP file
                 const zip = new window.JSZip();
                 const loadedZip = await zip.loadAsync(file);
                 
-                // Try to load config.json if it exists
                 if (loadedZip.files['config.json']) {
-                    try {
-                        const configText = await loadedZip.files['config.json'].async('string');
-                        const configObj = JSON.parse(configText);
-                        if (configObj.fonts && configObj.cards) {
-                            state.config = configObj;
-                            // Re-inject fonts
-                            Object.keys(state.config.fonts).forEach(name => {
-                                const f = state.config.fonts[name];
-                                if (f.base64) injectFont(f.family, f.base64);
-                            });
-                            els.langSelect.value = state.config.currentLang || state.config.languages[0];
-                            updateFontsList();
-                        }
-                    } catch (e) {
-                        console.error("Failed to parse config.json from ZIP:", e);
-                    }
+                    const configText = await loadedZip.files['config.json'].async('string');
+                    newConfig = JSON.parse(configText);
                 }
                 
                 for (const [filename, fileData] of Object.entries(loadedZip.files)) {
-                    // Skip directories and non-images
                     if (fileData.dir || !filename.match(/\.(jpe?g|png|webp)$/i)) continue;
-                    
                     const blob = await fileData.async('blob');
-                    const blobUrl = URL.createObjectURL(blob);
                     const cleanName = filename.split('/').pop();
-                    let savedRot = 0;
-                    if (state.config.cards[cleanName] && state.config.cards[cleanName].rotation) {
-                        savedRot = state.config.cards[cleanName].rotation;
-                    }
-                    state.images.push({ name: cleanName, blobUrl: blobUrl, rotation: savedRot });
+                    newImages.push({ name: cleanName, blob: blob });
                 }
             } else if (file.type.startsWith('image/')) {
-                // Handle direct image upload
-                let savedRot = 0;
-                if (state.config.cards[file.name] && state.config.cards[file.name].rotation) {
-                    savedRot = state.config.cards[file.name].rotation;
-                }
-                const blobUrl = URL.createObjectURL(file);
-                state.images.push({ name: file.name, blobUrl: blobUrl, rotation: savedRot });
+                newImages.push({ name: file.name, blob: file });
             }
         }
 
-        // Sort by filename alphabetically
-        state.images.sort((a, b) => a.name.localeCompare(b.name));
-
-        if (state.images.length === 0) {
-            setPlaceholderState('<p style="color:red;">No valid images found in ZIP.</p>');
+        if (newImages.length === 0) {
+            setPlaceholderState('<p style="color:red;">No valid images found.</p>');
             return;
         }
 
-        els.zipCount.textContent = `(${state.images.length} images)`;
-        state.currentIndex = 0;
-        
-        setPlaceholderState(null, false);
-        els.galleryContainer.style.display = 'flex';
-        
-        renderCurrentCard();
-        
-        if (Object.keys(state.config.cards).length > 0) {
-            let matchCount = 0;
-            state.images.forEach(img => {
-                if (state.config.cards[img.name]) matchCount++;
-            });
-            if (matchCount > 0) {
-                showToast(`Configuration applied to ${matchCount} out of ${state.images.length} files.`, "info");
-            } else {
-                showToast(`Loaded ${state.images.length} files. No matching configuration found.`, "info");
+        // VERSION CHECK (if merging)
+        if (state.images.length > 0 && newConfig) {
+            const currentVer = state.config.version || "0.0.0";
+            const newVer = newConfig.version || "0.0.0";
+            const cParts = currentVer.split('.');
+            const nParts = newVer.split('.');
+            
+            // Compare first two digits (Major.Minor)
+            if (cParts[0] !== nParts[0] || cParts[1] !== nParts[1]) {
+                showToast(`Cannot merge config: Version mismatch (${currentVer} vs ${newVer})`, "error");
+                newConfig = null; // Don't merge config, but we can still add images
             }
+        }
+
+        // CONFLICT CHECK
+        const existingNames = state.images.map(img => img.name);
+        conflicts = newImages.filter(img => existingNames.includes(img.name)).map(img => img.name);
+
+        state.pendingUpload = { newImages, newConfig, conflicts };
+
+        if (conflicts.length > 0) {
+            els.conflictList.innerHTML = conflicts.map(name => `<div style="padding: 2px 0;">• ${name}</div>`).join('');
+            els.conflictModal.style.display = 'flex';
         } else {
-            showToast(`Loaded ${state.images.length} files successfully.`, "success");
+            finalizeAppendUpload();
         }
 
     } catch (error) {
-        console.error("Error reading ZIP:", error);
-        setPlaceholderState(`<p style="color:red;">Error reading ZIP: ${error.message}</p>`);
+        console.error("Error uploading files:", error);
+        setPlaceholderState(`<p style="color:red;">Error: ${error.message}</p>`);
+        if (state.images.length > 0) setPlaceholderState(null, false);
     }
+}
+
+function finalizeAppendUpload() {
+    if (!state.pendingUpload) return;
+    const { newImages, newConfig } = state.pendingUpload;
+    
+    const isAppending = state.images.length > 0;
+    
+    // Cleanup UI if it was empty
+    if (!isAppending) {
+        state.images.forEach(img => URL.revokeObjectURL(img.blobUrl));
+        state.images = [];
+    }
+    
+    // MERGE CONFIG (if any)
+    if (newConfig) {
+        if (!isAppending) {
+            state.config = newConfig;
+        } else {
+            // Merge cards
+            if (newConfig.cards) {
+                Object.assign(state.config.cards, newConfig.cards);
+            }
+            // Merge fonts (keep existing, add new)
+            if (newConfig.fonts) {
+                Object.keys(newConfig.fonts).forEach(fName => {
+                    if (!state.config.fonts[fName]) {
+                        state.config.fonts[fName] = newConfig.fonts[fName];
+                    }
+                });
+            }
+        }
+
+        // Sync UI for both cases (Initial load & Append)
+        els.langSelect.value = state.config.currentLang || state.config.languages[0];
+        Object.keys(state.config.fonts).forEach(name => {
+            const f = state.config.fonts[name];
+            if (f.base64) injectFont(f.family, f.base64);
+        });
+        updateFontsList();
+    }
+
+    // MERGE IMAGES
+    newImages.forEach(newImg => {
+        const existingIdx = state.images.findIndex(img => img.name === newImg.name);
+        const blobUrl = URL.createObjectURL(newImg.blob);
+        
+        if (existingIdx !== -1) {
+            // Replace image data
+            URL.revokeObjectURL(state.images[existingIdx].blobUrl);
+            state.images[existingIdx].blobUrl = blobUrl;
+            state.images[existingIdx].loadedImg = null; // trigger reload
+        } else {
+            // Add new
+            let savedRot = 0;
+            if (state.config.cards[newImg.name] && state.config.cards[newImg.name].rotation) {
+                savedRot = state.config.cards[newImg.name].rotation;
+            }
+            state.images.push({ name: newImg.name, blobUrl: blobUrl, rotation: savedRot });
+        }
+    });
+
+    // Final UI updates
+    state.images.sort((a, b) => a.name.localeCompare(b.name));
+    els.zipCount.textContent = `(${state.images.length} images)`;
+    
+    setPlaceholderState(null, false);
+    els.galleryContainer.style.display = 'flex';
+    els.conflictModal.style.display = 'none';
+    state.pendingUpload = null;
+    els.zipInput.value = '';
+    
+    renderCurrentCard();
+    showToast(isAppending ? `Project updated: ${newImages.length} files processed.` : `Loaded ${newImages.length} images.`, "success");
+    autosaveConfig();
 }
 
 function navigate(dir) {
