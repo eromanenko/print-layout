@@ -239,29 +239,71 @@
 
 
             <div class="controls" style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px;">
+                <div
+                    style="background: #e9ecef; padding: 10px; border-radius: 4px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px;">
                     <b style="font-size: 14.4px;">1. Deck Management:</b>
                     <div style="display: flex; gap: 5px;">
                         <input type="file" id="locZipInput" accept=".zip,image/*" multiple style="display: none;">
                         <!-- LOAD -->
-                        <button id="locPickZipBtn" class="loc-secondary-btn" title="Upload Cards (ZIP/Images)" style="flex: 1; padding: 8px; background: #007bff; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <button id="locPickZipBtn" class="loc-secondary-btn" title="Upload Cards (ZIP/Images)"
+                            style="flex: 1; padding: 8px; background: #007bff; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
                         </button>
                         <!-- REORDER -->
-                        <button id="locManageDeckBtn" class="loc-secondary-btn" title="Manage Deck Order" disabled style="flex: 1; padding: 8px; background: #4b5563; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        <button id="locManageDeckBtn" class="loc-secondary-btn" title="Manage Deck Order" disabled
+                            style="flex: 1; padding: 8px; background: #4b5563; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
                         </button>
                         <!-- EXPORT PDF -->
-                        <button id="locExportPdfBtn" class="loc-secondary-btn" title="Send to Print Layout" disabled style="flex: 1; padding: 8px; background: #dc3545; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        <button id="locExportPdfBtn" class="loc-secondary-btn" title="Send to Print Layout" disabled
+                            style="flex: 1; padding: 8px; background: #dc3545; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2">
+                                </path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
                         </button>
                         <!-- SAVE PROJECT -->
-                        <button id="locExportProjectBtn" class="loc-secondary-btn" title="Save Project (Images + JSON -> ZIP)" disabled style="flex: 1; padding: 8px; background: #28a745; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <button id="locExportProjectBtn" class="loc-secondary-btn"
+                            title="Save Project (Images + JSON -> ZIP)" disabled
+                            style="flex: 1; padding: 8px; background: #28a745; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
                         </button>
                         <!-- EXPORT IMAGES -->
-                        <button id="locExportImagesBtn" class="loc-secondary-btn" title="Export Rendered Images (ZIP)" disabled style="flex: 1; padding: 8px; background: #6f42c1; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <button id="locExportImagesBtn" class="loc-secondary-btn" title="Export Rendered Images (ZIP)"
+                            disabled
+                            style="flex: 1; padding: 8px; background: #6f42c1; border: none; border-radius: 4px; cursor: not-allowed; display: flex; align-items: center; justify-content: center; color: #fff; transition: all 0.2s; opacity: 0.5;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -270,8 +312,7 @@
             <div class="controls sidebar-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                     <b style="font-size: 14.4px;">2. Configuration (JSON):</b>
-                    <label
-                        style="font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 4px;"
+                    <label style="font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 4px;"
                         title="Toggle Autosave">
                         <input type="checkbox" id="locAutosaveBtn" /> Autosave
                     </label>
@@ -320,27 +361,40 @@
                 </div>
             </div>
 
-            <!-- Language Switcher -->
+            <!-- Section 3: Languages -->
             <div class="controls sidebar-group">
-                <label class="checkbox-container" style="border: none; padding: 0; background: transparent;">
-                    <b style="font-size: 14.4px;">3. Current Language:</b>
-                    <select id="locLangSelect" style="width: 100px;">
-                        <option value="en">English</option>
-                        <option value="ua">Українська</option>
-                        <option value="ru">Русский</option>
-                    </select>
-                </label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <b style="font-size: 14.4px;">3. Languages:</b>
+                    <button id="locAddLangBtn" title="Add Language"
+                        style="background: none; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #007bff; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; background: white;">
+                        <svg id="locToggleFontFormIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div id="locLangList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+                    <!-- Tags will be injected here -->
+                </div>
             </div>
 
             <!-- Fonts Manager -->
             <div class="controls sidebar-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <b style="font-size: 14.4px;">4. Font Styles Manager</b>
-                    <button id="locToggleFontFormBtn" title="Toggle Font Style Form" style="background: none; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #007bff; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; background: white;">
-                        <svg id="locToggleFontFormIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <button id="locToggleFontFormBtn" title="Toggle Font Style Form"
+                        style="background: none; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #007bff; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; background: white;">
+                        <svg id="locToggleFontFormIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
                     </button>
                 </div>
-                
+
                 <div id="locFontsList"
                     style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; border: 1px solid #ccc; padding: 5px; background: white; margin-bottom: 5px;">
                     <span style="color:#666; font-size:0.9em; text-align:center;">No custom fonts added</span>
@@ -348,36 +402,46 @@
 
                 <div id="locFontForm"
                     style="display: none; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 12px; margin-top: 5px;">
-                    
+
                     <input type="text" id="locNewFontName" placeholder="Style Name (e.g. TitleFont)"
                         style="padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; background: white; transition: border-color 0.2s;"
                         onfocus="this.style.borderColor='#007bff'" onblur="this.style.borderColor='#ccc'">
-                    
+
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <button id="locPickFontFileBtn" type="button" 
+                        <button id="locPickFontFileBtn" type="button"
                             style="cursor: pointer; background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 4px; padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
                             onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
                             Upload Font
                         </button>
-                        <span id="locFontFileName" style="font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No file selected</span>
+                        <span id="locFontFileName"
+                            style="font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No
+                            file selected</span>
                         <input type="file" id="locNewFontFile" accept=".ttf,.woff" style="display: none;">
                     </div>
 
-                    <div style="display: flex; gap: 12px; align-items: center; background: #fdfdfd; padding: 5px; border-radius: 4px; border: 1px solid #f0f0f0;">
+                    <div
+                        style="display: flex; gap: 12px; align-items: center; background: #fdfdfd; padding: 5px; border-radius: 4px; border: 1px solid #f0f0f0;">
                         <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
                             <span style="font-size: 13px; color: #555; font-weight: 500;">Size:</span>
-                            <input type="number" id="locNewFontSize" value="20" 
+                            <input type="number" id="locNewFontSize" value="20"
                                 style="width: 45px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; font-size: 13px;">
                         </div>
-                        
-                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px; color: #555; margin-left: 5px;">
+
+                        <label
+                            style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px; color: #555; margin-left: 5px;">
                             <input type="checkbox" id="locNewFontItalic"> <i>Italic</i>
                         </label>
-                
+
                         <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end;">
                             <span style="font-size: 13px; color: #555; font-weight: 500;">Color:</span>
-                            <input type="color" id="locNewFontColor" value="#000000" 
+                            <input type="color" id="locNewFontColor" value="#000000"
                                 style="width: 28px; height: 28px; border: 1px solid #ccc; padding: 2px; background: white; cursor: pointer; border-radius: 4px;">
                         </div>
                     </div>
@@ -386,20 +450,31 @@
                         <button id="locPreviewFontBtn"
                             style="flex: 1; cursor: pointer; background: #17a2b8; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; font-weight: 500; transition: background 0.2s;"
                             onmouseover="this.style.background='#138496'" onmouseout="this.style.background='#17a2b8'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
                             Preview
                         </button>
                         <button id="locAddFontBtn"
                             style="flex: 1.5; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; font-weight: 500; transition: background 0.2s;"
                             onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
                             Add style
                         </button>
                     </div>
                 </div>
             </div>
 
-            <span id="locExportStatus" style="font-size: 0.85em; color: #666; text-align: center; display: none; margin-top: -10px;"></span>
+            <span id="locExportStatus"
+                style="font-size: 0.85em; color: #666; text-align: center; display: none; margin-top: -10px;"></span>
 
         </div>
 
@@ -586,7 +661,8 @@
             style="background: white; width: 80%; height: 80%; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Consolas', 'JetBrains Mono', monospace; font-size: 14px;">
             <div
                 style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; color: #333;">JSON Configuration <span style="font-size: 0.8em; color: #888; font-weight: normal;">v0.5.0</span></h3>
+                <h3 style="margin: 0; color: #333;">JSON Configuration <span
+                        style="font-size: 0.8em; color: #888; font-weight: normal;">v0.5.0</span></h3>
                 <button id="locCloseJsonModal"
                     style="background: transparent; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;"
                     title="Close">
@@ -606,7 +682,8 @@
                     display: none;
                 }
             </style>
-            <div id="locJsonTree" style="padding: 20px; overflow-y: auto; flex: 1; text-align: left; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; line-height: 1.5; color: #333; background: #fff;">
+            <div id="locJsonTree"
+                style="padding: 20px; overflow-y: auto; flex: 1; text-align: left; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; line-height: 1.5; color: #333; background: #fff;">
                 <!-- Rendered JSON will go here -->
             </div>
         </div>
@@ -615,16 +692,24 @@
     <!-- Import Table Modal -->
     <div id="locImportModal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; width: 500px; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+        <div
+            style="background: white; width: 500px; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div
+                style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; color: #333;">Import from CSV / XLSX</h3>
-                <button id="locCloseImportModal" style="background: transparent; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <button id="locCloseImportModal"
+                    style="background: transparent; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-            
+
             <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; font-size: 13px; color: #3730a3; line-height: 1.5;">
+                <div
+                    style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; font-size: 13px; color: #3730a3; line-height: 1.5;">
                     <b style="display: block; margin-bottom: 4px;">Table Structure:</b>
                     • Column 1: Image filename (e.g. <code>card_01.jpg</code>)<br>
                     • Column 2: <b>Font Style Number</b> (1, 2, ...)<br>
@@ -633,18 +718,39 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="locDownloadCsvTemplate" class="loc-secondary-btn" style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <button id="locDownloadCsvTemplate" class="loc-secondary-btn"
+                        style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
                         Sample CSV
                     </button>
-                    <button id="locDownloadXlsxTemplate" class="loc-secondary-btn" style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <button id="locDownloadXlsxTemplate" class="loc-secondary-btn"
+                        style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
                         Sample XLSX
                     </button>
                 </div>
 
-                <div id="locImportDropzone" style="height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;" onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9'" onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <div id="locImportDropzone"
+                    style="height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;"
+                    onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9'"
+                    onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        style="color: #64748b;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
                     <div style="text-align: center;">
                         <div style="font-weight: 500; color: #1e293b;">Click or drag file to import</div>
                         <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Supports .csv and .xlsx</div>
@@ -652,37 +758,54 @@
                     <input type="file" id="locTableFileInput" accept=".csv,.xlsx" style="display: none;">
                 </div>
             </div>
-            
-            <div style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
-                <button id="locCancelImport" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
+
+            <div
+                style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
+                <button id="locCancelImport"
+                    style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
             </div>
         </div>
     </div>
-    
+
     <!-- Merge Conflict Modal -->
     <div id="locConflictModal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; align-items: center; justify-content: center;">
-        <div style="background: white; width: 450px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column;">
-            <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 12px;">
+        <div
+            style="background: white; width: 450px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column;">
+            <div
+                style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 12px;">
                 <div style="color: #fd7e14; display: flex; align-items: center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
                 </div>
                 <h3 style="margin: 0; color: #333; font-size: 1.1rem;">File Name Conflicts</h3>
             </div>
-            
+
             <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
                 <p style="margin: 0; color: #555; line-height: 1.5; font-size: 14px;">
-                    The following files already exist in your project. Do you want to <b>overwrite the images</b> while keeping your existing localizer data (texts and patches)?
+                    The following files already exist in your project. Do you want to <b>overwrite the images</b> while
+                    keeping your existing localizer data (texts and patches)?
                 </p>
-                
-                <div id="locConflictList" style="max-height: 150px; overflow-y: auto; background: #f8fafc; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; color: #334155; border: 1px solid #e2e8f0;">
+
+                <div id="locConflictList"
+                    style="max-height: 150px; overflow-y: auto; background: #f8fafc; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; color: #334155; border: 1px solid #e2e8f0;">
                     <!-- Conflicts list -->
                 </div>
             </div>
-            
-            <div style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 12px;">
-                <button id="locCancelConflict" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
-                <button id="locConfirmConflict" style="padding: 8px 16px; border-radius: 6px; border: none; background: #28a745; color: #fff; cursor: pointer; font-weight: 500; font-size: 14px;">Confirm Overwrite</button>
+
+            <div
+                style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="locCancelConflict"
+                    style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
+                <button id="locConfirmConflict"
+                    style="padding: 8px 16px; border-radius: 6px; border: none; background: #28a745; color: #fff; cursor: pointer; font-weight: 500; font-size: 14px;">Confirm
+                    Overwrite</button>
             </div>
         </div>
     </div>
@@ -693,24 +816,37 @@
     <!-- Deck Manager Modal -->
     <div id="locDeckManagerModal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1200; align-items: center; justify-content: center;">
-        <div style="background: white; width: 80%; height: 80%; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;">
-            <div style="padding: 15px 25px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+        <div
+            style="background: white; width: 80%; height: 80%; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;">
+            <div
+                style="padding: 15px 25px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h3 style="margin: 0; font-size: 1.1rem; color: #333;">Manage Deck Order</h3>
                     <span style="font-size: 0.85em; color: #666;">Drag and drop to reorder cards</span>
                 </div>
-                <button id="locCloseDeckManager" style="background: transparent; border: none; color: #666; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#666'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <button id="locCloseDeckManager"
+                    style="background: transparent; border: none; color: #666; cursor: pointer; transition: color 0.2s;"
+                    onmouseover="this.style.color='#333'" onmouseout="this.style.color='#666'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-            
-            <div id="locDeckManagerGrid" style="flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; align-content: start; background: #fff;">
+
+            <div id="locDeckManagerGrid"
+                style="flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 15px; align-content: start; background: #fff;">
                 <!-- Thumbnails will be injected here -->
             </div>
-            
-            <div style="padding: 12px 25px; border-top: 1px solid #ddd; background: #f8f9fa; display: flex; justify-content: flex-end; gap: 12px;">
-                <button id="locCloseDeckManagerAlt" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
-                <button id="locSaveDeckOrder" style="padding: 8px 20px; border-radius: 6px; border: none; background: #007bff; color: #fff; cursor: pointer; font-weight: 500; font-size: 14px;">Save Order</button>
+
+            <div
+                style="padding: 12px 25px; border-top: 1px solid #ddd; background: #f8f9fa; display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="locCloseDeckManagerAlt"
+                    style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
+                <button id="locSaveDeckOrder"
+                    style="padding: 8px 20px; border-radius: 6px; border: none; background: #007bff; color: #fff; cursor: pointer; font-weight: 500; font-size: 14px;">Save
+                    Order</button>
             </div>
         </div>
     </div>

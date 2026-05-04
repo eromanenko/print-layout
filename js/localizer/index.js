@@ -6,7 +6,7 @@ const state = {
     currentIndex: 0,
     config: {
         version: "0.5.0",
-        languages: ["en", "ua", "ru"],
+        languages: ["en"],
         currentLang: "en",
         fonts: {}, // { "TitleFont": { family: "TitleFont", size: 20, color: "#000", base64: "data:..." } }
         cards: {}
@@ -108,7 +108,12 @@ const els = {
     downloadCsvBtn: document.getElementById('locDownloadCsvTemplate'),
     downloadXlsxBtn: document.getElementById('locDownloadXlsxTemplate'),
     importDropzone: document.getElementById('locImportDropzone'),
-    tableFileInput: document.getElementById('locTableFileInput')
+    tableFileInput: document.getElementById('locTableFileInput'),
+
+    // Phase 11: Language Management
+    langList: document.getElementById('locLangList'),
+    addLangBtn: document.getElementById('locAddLangBtn'),
+    langSelect: document.getElementById('locLangSelect') // kept for backward compatibility but hidden/unused
 };
 
 // Listeners
@@ -145,6 +150,12 @@ els.importDropzone.addEventListener('click', () => els.tableFileInput.click());
 els.tableFileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) handleTableImport(e.target.files[0]);
     e.target.value = '';
+});
+
+// Phase 11: Language Management Listeners
+els.addLangBtn.addEventListener('click', () => {
+    const code = prompt("Enter new language code (e.g. 'fr', 'de'):");
+    if (code) handleAddLanguage(code);
 });
 
 // Drag & Drop for Import Modal
@@ -185,11 +196,7 @@ function setAlignment(align) {
 }
 
 // Phase 2 Listeners
-els.langSelect.addEventListener('change', (e) => {
-    state.config.currentLang = e.target.value;
-    renderOverlays(); // Just re-render overlays to switch text
-    redrawCanvas();
-});
+// Language switching is now handled by pills in updateLanguagesUI
 els.addFontBtn.addEventListener('click', handleAddFont);
 els.previewFontBtn.addEventListener('click', handlePreviewFont);
 els.closePreviewBtn.addEventListener('click', () => els.previewOverlay.style.display = 'none');
@@ -319,7 +326,10 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => isDraggingPreview = false);
 
 // Initialize UI
-updateFontsList();
+document.addEventListener('DOMContentLoaded', () => {
+    updateFontsList();
+    updateLanguagesUI();
+});
 
 async function autosaveConfig() {
     if (els.autosaveBtn.checked) {
@@ -608,14 +618,26 @@ async function handleTableImport(file) {
         
         if (filenameIdx === -1) return showToast("Column 'filename' not found in header", "error");
 
-        // Identify language columns
+        // Identify language columns and auto-add missing ones
         const langCols = {}; // { langCode: colIndex }
-        state.config.languages.forEach(lang => {
-            const idx = headers.indexOf(lang.toLowerCase());
-            if (idx !== -1) langCols[lang] = idx;
-        });
+        const reservedHeaders = ['filename', 'font'];
+        
+        for (let i = 0; i < headers.length; i++) {
+            const h = headers[i];
+            if (!h || reservedHeaders.includes(h)) continue;
+            
+            // Check if this is a language we already have
+            const existingLang = state.config.languages.find(l => l.toLowerCase() === h);
+            if (existingLang) {
+                langCols[existingLang] = i;
+            } else {
+                // Auto-add new language
+                handleAddLanguage(h, true); // true = silent/batch
+                langCols[h] = i;
+            }
+        }
 
-        if (Object.keys(langCols).length === 0) return showToast("No matching language columns found", "error");
+        if (Object.keys(langCols).length === 0) return showToast("No language columns found in table", "error");
 
         const rows = data.slice(1);
         let importedCount = 0;
@@ -845,13 +867,15 @@ function finalizeAppendUpload() {
             }
         }
 
-        // Sync UI for both cases (Initial load & Append)
-        els.langSelect.value = state.config.currentLang || state.config.languages[0];
+        // Re-inject fonts
         Object.keys(state.config.fonts).forEach(name => {
             const f = state.config.fonts[name];
             if (f.base64) injectFont(f.family, f.base64);
         });
+
+        // Sync UI for both cases (Initial load & Append)
         updateFontsList();
+        updateLanguagesUI();
     }
 
     // MERGE IMAGES
@@ -1733,6 +1757,122 @@ function updateFontsList() {
     });
 }
 
+function updateLanguagesUI() {
+    const list = els.langList || document.getElementById('locLangList');
+    if (!list) return;
+
+    if (!state.config.languages || state.config.languages.length === 0) {
+        state.config.languages = ["en"];
+    }
+    
+    // Ensure currentLang is valid
+    if (!state.config.languages.includes(state.config.currentLang)) {
+        state.config.currentLang = state.config.languages[0];
+    }
+    
+    // Update Pills List
+    list.innerHTML = '';
+    state.config.languages.forEach(lang => {
+        const isActive = state.config.currentLang === lang;
+        const pill = document.createElement('div');
+        pill.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: ${isActive ? '#007bff' : '#f1f5f9'};
+            color: ${isActive ? '#fff' : '#475569'};
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid ${isActive ? '#007bff' : '#e2e8f0'};
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = lang.toUpperCase();
+        pill.appendChild(label);
+        
+        if (state.config.languages.length > 1) {
+            const delBtn = document.createElement('span');
+            delBtn.innerHTML = '&times;';
+            delBtn.style.cssText = `cursor: pointer; font-size: 18px; line-height: 1; color: ${isActive ? 'rgba(255,255,255,0.7)' : '#94a3b8'}; margin-left: 4px;`;
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleRemoveLanguage(lang);
+            });
+            pill.appendChild(delBtn);
+        }
+        
+        pill.addEventListener('click', () => {
+            state.config.currentLang = lang;
+            updateLanguagesUI();
+            renderOverlays();
+            redrawCanvas();
+            autosaveConfig();
+        });
+        
+        list.appendChild(pill);
+    });
+}
+
+function handleAddLanguage(code, silent = false) {
+    if (!code || typeof code !== 'string') return;
+    code = code.trim().toLowerCase();
+    if (!code) return;
+    if (state.config.languages.includes(code)) {
+        if (!silent) showToast(`Language ${code} already exists`, "info");
+        return;
+    }
+    
+    state.config.languages.push(code);
+    
+    // Ensure all existing texts have this key
+    Object.values(state.config.cards).forEach(card => {
+        if (card.texts) {
+            card.texts.forEach(t => {
+                if (t.content && t.content[code] === undefined) {
+                    t.content[code] = "";
+                }
+            });
+        }
+    });
+    
+    updateLanguagesUI();
+    if (!silent) {
+        showToast(`Language ${code.toUpperCase()} added`, "success");
+        autosaveConfig();
+    }
+}
+
+function handleRemoveLanguage(code) {
+    if (state.config.languages.length <= 1) return;
+    if (!confirm(`Are you sure you want to remove language "${code.toUpperCase()}"? All translations for this language will be deleted.`)) return;
+    
+    state.config.languages = state.config.languages.filter(l => l !== code);
+    
+    // Cleanup translations
+    Object.values(state.config.cards).forEach(card => {
+        if (card.texts) {
+            card.texts.forEach(t => {
+                if (t.content) delete t.content[code];
+            });
+        }
+    });
+    
+    if (state.config.currentLang === code) {
+        state.config.currentLang = state.config.languages[0];
+    }
+    
+    updateLanguagesUI();
+    renderOverlays();
+    redrawCanvas();
+    showToast(`Language ${code.toUpperCase()} removed`, "info");
+    autosaveConfig();
+}
+
 function renderPaletteModal() {
     els.paletteColorsContainer.innerHTML = '';
     const palette = state.config.patchPalette || [];
@@ -1860,8 +2000,9 @@ async function loadConfigFromFile(file) {
         });
         
         // Update UI
-        els.langSelect.value = state.config.currentLang || state.config.languages[0];
-        
+        updateFontsList();
+        updateLanguagesUI();
+
         // Apply saved rotations to currently loaded images
         let matchCount = 0;
         if (state.images.length > 0) {
@@ -1880,8 +2021,6 @@ async function loadConfigFromFile(file) {
         
         els.manageDeckBtn.style.display = 'flex';
         updateDeckControls();
-        
-        updateFontsList();
         renderCurrentCard();
     } catch (error) {
         console.error("Config import error:", error);
