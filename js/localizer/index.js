@@ -98,7 +98,17 @@ const els = {
     deckManagerModal: document.getElementById('locDeckManagerModal'),
     deckManagerGrid: document.getElementById('locDeckManagerGrid'),
     closeDeckManagerBtn: document.getElementById('locCloseDeckManager'),
-    saveDeckOrderBtn: document.getElementById('locSaveDeckOrder')
+    saveDeckOrderBtn: document.getElementById('locSaveDeckOrder'),
+
+    // Phase 8: Import Table
+    importTableBtn: document.getElementById('locImportTableBtn'),
+    importModal: document.getElementById('locImportModal'),
+    closeImportModal: document.getElementById('locCloseImportModal'),
+    cancelImportBtn: document.getElementById('locCancelImport'),
+    downloadCsvBtn: document.getElementById('locDownloadCsvTemplate'),
+    downloadXlsxBtn: document.getElementById('locDownloadXlsxTemplate'),
+    importDropzone: document.getElementById('locImportDropzone'),
+    tableFileInput: document.getElementById('locTableFileInput')
 };
 
 // Listeners
@@ -122,7 +132,42 @@ els.cancelConflictBtn.addEventListener('click', () => {
 
 els.manageDeckBtn.addEventListener('click', handleOpenDeckManager);
 els.closeDeckManagerBtn.addEventListener('click', () => els.deckManagerModal.style.display = 'none');
+document.getElementById('locCloseDeckManagerAlt').addEventListener('click', () => els.deckManagerModal.style.display = 'none');
 els.saveDeckOrderBtn.addEventListener('click', handleSaveDeckOrder);
+
+// Phase 8: Import Table Listeners
+els.importTableBtn.addEventListener('click', () => els.importModal.style.display = 'flex');
+els.closeImportModal.addEventListener('click', () => els.importModal.style.display = 'none');
+els.cancelImportBtn.addEventListener('click', () => els.importModal.style.display = 'none');
+els.downloadCsvBtn.addEventListener('click', handleDownloadCsvTemplate);
+els.downloadXlsxBtn.addEventListener('click', handleDownloadXlsxTemplate);
+els.importDropzone.addEventListener('click', () => els.tableFileInput.click());
+els.tableFileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleTableImport(e.target.files[0]);
+    e.target.value = '';
+});
+
+// Drag & Drop for Import Modal
+els.importDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    els.importDropzone.style.borderColor = '#3b82f6';
+    els.importDropzone.style.background = '#eff6ff';
+});
+els.importDropzone.addEventListener('dragleave', () => {
+    els.importDropzone.style.borderColor = '#cbd5e1';
+    els.importDropzone.style.background = '#f8fafc';
+});
+els.importDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    els.importDropzone.style.borderColor = '#cbd5e1';
+    els.importDropzone.style.background = '#f8fafc';
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.csv') || file.name.endsWith('.xlsx'))) {
+        handleTableImport(file);
+    } else {
+        showToast("Invalid file type. Please use .csv or .xlsx", "error");
+    }
+});
 
 function setAlignment(align) {
     if (!state.activeTextId || state.images.length === 0) return;
@@ -320,20 +365,20 @@ async function saveConfigToFile(silent = false) {
 // --- View Config (JSON Viewer) ---
 
 function renderJsonToHTML(data) {
-    if (data === null) return `<span style="color:#94a3b8">null</span>`;
+    if (data === null) return `<span style="color:#64748b">null</span>`;
     if (typeof data === 'string') {
         let str = data;
         if (str.startsWith('data:') && str.length > 50) {
             str = str.substring(0, 50) + '... (truncated)';
         }
-        return `<span style="color:#a3e635">"${str}"</span>`;
+        return `<span style="color:#15803d">"${str}"</span>`;
     }
-    if (typeof data === 'number') return `<span style="color:#fb923c">${data}</span>`;
-    if (typeof data === 'boolean') return `<span style="color:#f472b6">${data}</span>`;
+    if (typeof data === 'number') return `<span style="color:#c2410c">${data}</span>`;
+    if (typeof data === 'boolean') return `<span style="color:#be185d">${data}</span>`;
     
     if (Array.isArray(data)) {
         if (data.length === 0) return `<span>[]</span>`;
-        let html = `<details open><summary style="cursor: pointer; user-select: none;">[</summary><div style="padding-left: 15px; border-left: 1px solid #444; margin-left: 5px;">`;
+        let html = `<details open><summary style="cursor: pointer; user-select: none;">[</summary><div style="padding-left: 15px; border-left: 1px solid #ddd; margin-left: 5px;">`;
         data.forEach((item, i) => {
             html += `<div style="text-align: left;">${renderJsonToHTML(item)}${i < data.length - 1 ? ',' : ''}</div>`;
         });
@@ -345,10 +390,10 @@ function renderJsonToHTML(data) {
         const keys = Object.keys(data);
         if (keys.length === 0) return `<span>{}</span>`;
         
-        let html = `<details open><summary style="cursor: pointer; user-select: none;">{</summary><div style="padding-left: 15px; border-left: 1px solid #444; margin-left: 5px;">`;
+        let html = `<details open><summary style="cursor: pointer; user-select: none;">{</summary><div style="padding-left: 15px; border-left: 1px solid #ddd; margin-left: 5px;">`;
         keys.forEach((k, i) => {
             const val = data[k];
-            html += `<div style="text-align: left;"><span style="color:#38bdf8">"${k}"</span>: ${renderJsonToHTML(val)}${i < keys.length - 1 ? ',' : ''}</div>`;
+            html += `<div style="text-align: left;"><span style="color:#1d4ed8">"${k}"</span>: ${renderJsonToHTML(val)}${i < keys.length - 1 ? ',' : ''}</div>`;
         });
         html += `</div><span>}</span></details>`;
         return html;
@@ -507,6 +552,186 @@ async function handleExportPdf() {
     } finally {
         els.exportStatus.style.display = 'none';
     }
+}
+
+// --- Phase 8: Table Import ---
+
+function handleDownloadCsvTemplate() {
+    const headers = ["filename", "font", ...state.config.languages];
+    const rows = [
+        ["card_01.jpg", "1", "Title in English", "Заголовок українською", "Заголовок на русском"],
+        ["card_01.jpg", "2", "Description in English", "Опис українською", "Описание на русском"]
+    ];
+    const csvContent = [headers, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "template.csv";
+    a.click();
+    showToast("CSV Template downloaded", "success");
+}
+
+function handleDownloadXlsxTemplate() {
+    if (!window.XLSX) return showToast("Excel library not loaded", "error");
+    const headers = ["filename", "font", ...state.config.languages];
+    const rows = [
+        ["card_01.jpg", "1", "Title in English", "Заголовок українською", "Заголовок на русском"],
+        ["card_01.jpg", "2", "Description in English", "Опис українською", "Описание на русском"]
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    XLSX.utils.book_append_sheet(wb, ws, "Translations");
+    XLSX.writeFile(wb, "template.xlsx");
+    showToast("XLSX Template downloaded", "success");
+}
+
+async function handleTableImport(file) {
+    els.importModal.style.display = 'none';
+    try {
+        let data = [];
+        if (file.name.endsWith('.csv')) {
+            const text = await file.text();
+            data = parseCsv(text);
+        } else if (file.name.endsWith('.xlsx')) {
+            const buffer = await file.arrayBuffer();
+            const wb = XLSX.read(buffer);
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        }
+
+        if (data.length < 2) return showToast("Table is empty or missing headers", "error");
+
+        const headers = data[0].map(h => String(h).trim().toLowerCase());
+        const filenameIdx = headers.indexOf('filename');
+        const fontIdx = headers.indexOf('font');
+        
+        if (filenameIdx === -1) return showToast("Column 'filename' not found in header", "error");
+
+        // Identify language columns
+        const langCols = {}; // { langCode: colIndex }
+        state.config.languages.forEach(lang => {
+            const idx = headers.indexOf(lang.toLowerCase());
+            if (idx !== -1) langCols[lang] = idx;
+        });
+
+        if (Object.keys(langCols).length === 0) return showToast("No matching language columns found", "error");
+
+        const rows = data.slice(1);
+        let importedCount = 0;
+        const fileOffsets = {}; // { filename: count } to calculate cascading offset
+
+        // Font styles list
+        const fontIds = Object.keys(state.config.fonts);
+
+        rows.forEach(row => {
+            const fname = String(row[filenameIdx] || '').trim();
+            if (!fname) return;
+
+            // Find matching card (case-insensitive)
+            const card = state.images.find(img => img.name.toLowerCase() === fname.toLowerCase());
+            if (!card) return;
+
+            // Handle font style number
+            let selectedFontId = null;
+            if (fontIdx !== -1) {
+                const styleNum = parseInt(row[fontIdx]);
+                if (!isNaN(styleNum) && styleNum > 0 && styleNum <= fontIds.length) {
+                    selectedFontId = fontIds[styleNum - 1];
+                }
+            } else {
+                // Default to first font if column missing
+                selectedFontId = fontIds.length > 0 ? fontIds[0] : null;
+            }
+
+            // Prepare content
+            const content = {};
+            let hasContent = false;
+            Object.entries(langCols).forEach(([lang, idx]) => {
+                const val = String(row[idx] || '').trim();
+                if (val) {
+                    content[lang] = val;
+                    hasContent = true;
+                }
+            });
+
+            if (!hasContent) return;
+
+            // Add to config
+            if (!state.config.cards[card.name]) {
+                state.config.cards[card.name] = { texts: [] };
+            }
+
+            const offsetCount = fileOffsets[card.name] || 0;
+            const offset = offsetCount * 2; // 2% step
+
+            const newText = {
+                id: "txt_" + Math.random().toString(36).substr(2, 9),
+                fontId: selectedFontId,
+                x: 5 + offset,
+                y: 5 + offset,
+                width: 40,
+                height: 10,
+                align: "left",
+                content: content
+            };
+
+            state.config.cards[card.name].texts.push(newText);
+            fileOffsets[card.name] = offsetCount + 1;
+            importedCount++;
+        });
+
+        if (importedCount > 0) {
+            showToast(`Imported ${importedCount} text blocks`, "success");
+            renderOverlays();
+            redrawCanvas();
+            autosaveConfig();
+        } else {
+            showToast("No matching cards or content found in table", "info");
+        }
+
+    } catch (err) {
+        console.error("Import error:", err);
+        showToast("Error importing table: " + err.message, "error");
+    }
+}
+
+function parseCsv(text) {
+    // Simple CSV parser handling quotes
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                currentCell += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            currentRow.push(currentCell);
+            currentCell = '';
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') i++;
+            currentRow.push(currentCell);
+            rows.push(currentRow);
+            currentRow = [];
+            currentCell = '';
+        } else {
+            currentCell += char;
+        }
+    }
+    if (currentRow.length > 0 || currentCell) {
+        currentRow.push(currentCell);
+        rows.push(currentRow);
+    }
+    return rows;
 }
 
 function setPlaceholderState(html, isVisible = true) {
@@ -1679,41 +1904,44 @@ function handleOpenDeckManager() {
         item.dataset.index = idx;
         
         item.style.cssText = `
-            background: #2d2d2d;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 5px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             align-items: center;
             cursor: move;
             transition: all 0.2s;
             position: relative;
-            min-width: 60px;
+            min-width: 70px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         `;
         
         const thumb = document.createElement('div');
         thumb.style.cssText = `
-            width: 50px;
-            height: 70px;
+            width: 54px;
+            height: 76px;
             background-image: url("${img.blobUrl}");
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             border-radius: 4px;
-            background-color: #1a1a1a;
+            background-color: #eee;
+            border: 1px solid #eee;
         `;
         
         const name = document.createElement('div');
         name.style.cssText = `
             font-size: 11px;
-            color: #ccc;
+            color: #333;
             max-width: 100px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: center;
+            font-weight: 500;
         `;
         name.textContent = img.name;
         
@@ -1748,7 +1976,7 @@ function handleOpenDeckManager() {
             item.style.opacity = '1';
             item.style.transform = 'scale(1)';
             const items = els.deckManagerGrid.querySelectorAll('.loc-deck-item');
-            items.forEach(i => i.style.borderColor = '#444');
+            items.forEach(i => i.style.borderColor = '#ddd');
         });
         
         item.addEventListener('dragover', (e) => {
@@ -1756,19 +1984,19 @@ function handleOpenDeckManager() {
             e.dataTransfer.dropEffect = 'move';
             if (item !== draggedItem) {
                 item.style.borderColor = '#007bff';
-                item.style.background = '#333';
+                item.style.background = '#eff6ff';
             }
         });
         
         item.addEventListener('dragleave', () => {
-            item.style.borderColor = '#444';
-            item.style.background = '#2d2d2d';
+            item.style.borderColor = '#ddd';
+            item.style.background = '#f8f9fa';
         });
         
         item.addEventListener('drop', (e) => {
             e.preventDefault();
-            item.style.borderColor = '#444';
-            item.style.background = '#2d2d2d';
+            item.style.borderColor = '#ddd';
+            item.style.background = '#f8f9fa';
             
             if (item !== draggedItem) {
                 const allItems = Array.from(els.deckManagerGrid.querySelectorAll('.loc-deck-item'));
