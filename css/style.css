@@ -431,3 +431,251 @@ button.tab-btn:hover:not(:disabled) {
     width: 24px;
     height: 24px;
 }
+
+/* ==============================================
+   Card Localizer — Overlays, Handles & Controls
+   ============================================== */
+
+/* ── Base overlay wrappers ─────────────────────── */
+.loc-text-overlay {
+    position: absolute;
+    box-sizing: content-box;
+    transform-origin: 0 0;
+    overflow: visible;
+    pointer-events: auto;
+    border: none;
+    outline: 2px dashed #007bff;
+    box-shadow: none;
+    z-index: 10;
+}
+.loc-text-overlay.is-active {
+    outline: 2px solid #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    z-index: 20;
+}
+
+.loc-patch-overlay {
+    position: absolute;
+    box-sizing: border-box;
+    transform-origin: 0 0;
+    background: transparent;
+    pointer-events: none;
+    border: 2px dashed #fd7e14;
+    box-shadow: none;
+    z-index: 1;
+}
+.loc-patch-overlay.is-active {
+    border: 2px solid #fd7e14;
+    box-shadow: 0 0 10px rgba(253, 126, 20, 0.5);
+    z-index: 15;
+}
+
+/* ── Overlay textarea ──────────────────────────── */
+.loc-overlay-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: transparent;
+    caret-color: #007bff;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    line-height: 1.2;
+    overflow: hidden;
+    font-weight: 400;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* ── Handles — common base ─────────────────────── */
+.loc-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    z-index: 10;
+    display: none;
+}
+.is-active > .loc-handle { display: block; }
+
+/* Drag handle */
+.loc-drag-handle {
+    top: -10px;
+    left: -10px;
+    background: #007bff;
+    cursor: grab;
+}
+.loc-patch-overlay .loc-drag-handle {
+    background: #fd7e14;
+    pointer-events: auto;
+}
+
+/* Rotate handle */
+.loc-rotate-handle {
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: orange;
+    cursor: crosshair;
+}
+
+/* Resize handle */
+.loc-resize-handle {
+    bottom: -10px;
+    right: -10px;
+    background: blue;
+    cursor: nwse-resize;
+}
+
+/* Info icon (flex, not block) */
+.loc-info-icon {
+    position: absolute;
+    top: -10px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    background: #17a2b8;
+    color: white;
+    border-radius: 50%;
+    cursor: help;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.is-active > .loc-info-icon { display: flex; }
+
+/* Delete buttons (flex, not block) */
+.loc-del-text,
+.loc-del-patch {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.is-active > .loc-del-text,
+.is-active > .loc-del-patch { display: flex; }
+
+/* Patch selector tab (always visible) */
+.loc-patch-selector {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 14px;
+    height: 14px;
+    background: #fd7e14;
+    border-radius: 3px;
+    cursor: pointer;
+    z-index: 12;
+    pointer-events: auto;
+    opacity: 0.6;
+}
+.loc-patch-overlay.is-active .loc-patch-selector { opacity: 1; }
+
+/* ── Deck Manager ──────────────────────────────── */
+.loc-deck-item {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    cursor: move;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s, opacity 0.15s;
+    position: relative;
+    min-width: 70px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.loc-deck-item.drag-over {
+    border-color: #007bff;
+    background: #eff6ff;
+}
+.loc-deck-item.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+}
+
+.loc-deck-thumb {
+    width: 54px;
+    height: 76px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 4px;
+    background-color: #eee;
+    border: 1px solid #eee;
+}
+
+.loc-deck-name {
+    font-size: 11px;
+    color: #333;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    font-weight: 500;
+}
+
+.loc-deck-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+/* ── Language pills ────────────────────────────── */
+.loc-lang-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    user-select: none;
+}
+.loc-lang-pill.is-active {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+.loc-lang-pill-del {
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    color: #94a3b8;
+    margin-left: 4px;
+}
+.loc-lang-pill.is-active .loc-lang-pill-del {
+    color: rgba(255, 255, 255, 0.7);
+}

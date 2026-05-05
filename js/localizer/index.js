@@ -1,4 +1,4 @@
-﻿import { showToast } from '../utils/toast.js';
+import { showToast } from '../utils/toast.js';
 import { state, els } from './state.js';
 import { redrawCanvas, drawPatchOnCanvas, getShrunkFontSize, calculateWordWrap, drawTextOnCanvas } from './renderer.js';
 import { setActiveText, setActivePatch, updateOverlaysVisualState, renderOverlays, setupOverlayInteraction } from './overlays.js';
@@ -459,60 +459,21 @@ function handleOpenDeckManager() {
         item.draggable = true;
         item.dataset.index = idx;
         
-        item.style.cssText = `
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 6px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            cursor: move;
-            transition: all 0.2s;
-            position: relative;
-            min-width: 70px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        `;
+        item.style.cssText = '';
+        item.className = 'loc-deck-item';
+        item.draggable = true;
+        item.dataset.index = idx;
         
         const thumb = document.createElement('div');
-        thumb.style.cssText = `
-            width: 54px;
-            height: 76px;
-            background-image: url("${img.blobUrl}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 4px;
-            background-color: #eee;
-            border: 1px solid #eee;
-        `;
+        thumb.className = 'loc-deck-thumb';
+        thumb.style.backgroundImage = `url("${img.blobUrl}")`;
         
         const name = document.createElement('div');
-        name.style.cssText = `
-            font-size: 11px;
-            color: #333;
-            max-width: 100px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
-            font-weight: 500;
-        `;
+        name.className = 'loc-deck-name';
         name.textContent = img.name;
         
         const badge = document.createElement('div');
-        badge.style.cssText = `
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(0,0,0,0.7);
-            color: #fff;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 4px;
-            pointer-events: none;
-        `;
+        badge.className = 'loc-deck-badge';
         badge.textContent = idx + 1;
         
         item.appendChild(thumb);
@@ -522,37 +483,27 @@ function handleOpenDeckManager() {
         // Drag Events
         item.addEventListener('dragstart', (e) => {
             draggedItem = item;
-            item.style.opacity = '0.4';
-            item.style.transform = 'scale(0.95)';
+            item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
         });
         
         item.addEventListener('dragend', () => {
             draggedItem = null;
-            item.style.opacity = '1';
-            item.style.transform = 'scale(1)';
-            const items = els.deckManagerGrid.querySelectorAll('.loc-deck-item');
-            items.forEach(i => i.style.borderColor = '#ddd');
+            item.classList.remove('dragging');
+            els.deckManagerGrid.querySelectorAll('.loc-deck-item').forEach(i => i.classList.remove('drag-over'));
         });
         
         item.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            if (item !== draggedItem) {
-                item.style.borderColor = '#007bff';
-                item.style.background = '#eff6ff';
-            }
+            if (item !== draggedItem) item.classList.add('drag-over');
         });
         
-        item.addEventListener('dragleave', () => {
-            item.style.borderColor = '#ddd';
-            item.style.background = '#f8f9fa';
-        });
+        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
         
         item.addEventListener('drop', (e) => {
             e.preventDefault();
-            item.style.borderColor = '#ddd';
-            item.style.background = '#f8f9fa';
+            item.classList.remove('drag-over');
             
             if (item !== draggedItem) {
                 const allItems = Array.from(els.deckManagerGrid.querySelectorAll('.loc-deck-item'));

@@ -49,44 +49,14 @@ export function setActivePatch(id) {
     updateFontsList();
 }
 
-// ── Visual state sync (no DOM rebuild) ─────────────────────
+// ── Visual state sync — just toggle CSS class ───────────────
 
 export function updateOverlaysVisualState() {
     const allOverlays = els.overlaysContainer.querySelectorAll('.loc-text-overlay, .loc-patch-overlay');
     allOverlays.forEach(el => {
         const id = el.dataset.id;
         const isActive = (id === state.activeTextId) || (id === state.activePatchId);
-        const isPatch = el.classList.contains('loc-patch-overlay');
-
-        if (isActive) {
-            if (isPatch) {
-                el.style.border = '2px solid #fd7e14';
-                el.style.outline = 'none';
-            } else {
-                el.style.border = 'none';
-                el.style.outline = '2px solid #007bff';
-            }
-            el.style.boxShadow = isPatch ? '0 0 10px rgba(253, 126, 20, 0.5)' : '0 0 10px rgba(0, 123, 255, 0.5)';
-            el.style.zIndex = '20';
-        } else {
-            if (isPatch) {
-                el.style.border = '2px dashed #fd7e14';
-                el.style.outline = 'none';
-            } else {
-                el.style.border = 'none';
-                el.style.outline = '2px dashed #007bff';
-            }
-            el.style.boxShadow = 'none';
-            el.style.zIndex = isPatch ? '1' : '10';
-        }
-
-        el.querySelectorAll('.loc-handle').forEach(h => {
-            if (h.classList.contains('loc-info-icon')) {
-                h.style.display = isActive ? 'flex' : 'none';
-            } else if (!h.classList.contains('loc-patch-selector')) {
-                h.style.display = isActive ? 'block' : 'none';
-            }
-        });
+        el.classList.toggle('is-active', isActive);
     });
 }
 
@@ -105,29 +75,21 @@ export async function renderOverlays() {
         cardConfig.patches.forEach(p => {
             const isActive = p.id === state.activePatchId;
             const div = document.createElement('div');
-            div.className = 'loc-patch-overlay';
+            div.className = 'loc-patch-overlay' + (isActive ? ' is-active' : '');
             div.dataset.id = p.id;
-            div.style.position = 'absolute';
+            // Dynamic position/size only
             div.style.left = p.x + '%';
             div.style.top = p.y + '%';
             div.style.width = p.width + '%';
             div.style.height = p.height + '%';
             div.style.transform = `rotate(${p.rotation || 0}deg)`;
-            div.style.border = isActive ? '2px solid #fd7e14' : '2px dashed #fd7e14';
-            div.style.boxShadow = isActive ? '0 0 10px rgba(253, 126, 20, 0.5)' : 'none';
-            div.style.zIndex = isActive ? '15' : '1';
-            div.style.pointerEvents = 'none'; // clicks pass through to texts
-            div.style.boxSizing = 'border-box';
-            div.style.background = 'transparent';
-            div.style.transformOrigin = '0 0';
 
             div.innerHTML = `
-                <!-- Always-visible small selector tab -->
-                <div class="loc-patch-selector" style="position:absolute; top:-1px; left:-1px; width:14px; height:14px; background:#fd7e14; border-radius:3px; cursor:pointer; z-index:12; pointer-events:auto; opacity:${isActive ? '1' : '0.6'};" title="Select patch"></div>
-                <div class="loc-drag-handle loc-handle" style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:#fd7e14; border-radius:50%; cursor:grab; z-index:10; pointer-events:auto; display:${isActive?'block':'none'};" title="Drag"></div>
-                <div class="loc-rotate-handle loc-handle" style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:20px; height:20px; background:orange; border-radius:50%; cursor:crosshair; z-index:10; pointer-events:auto; display:${isActive?'block':'none'};" title="Rotate"></div>
-                <div class="loc-resize-handle loc-handle" style="position:absolute; bottom:-10px; right:-10px; width:20px; height:20px; background:blue; border-radius:50%; cursor:nwse-resize; z-index:10; pointer-events:auto; display:${isActive?'block':'none'};" title="Resize"></div>
-                <button class="loc-del-patch loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; z-index:10; pointer-events:auto; display:${isActive?'flex':'none'}; align-items:center; justify-content:center; padding:0;">
+                <div class="loc-patch-selector" title="Select patch"></div>
+                <div class="loc-drag-handle loc-handle" title="Drag"></div>
+                <div class="loc-rotate-handle loc-handle" title="Rotate"></div>
+                <div class="loc-resize-handle loc-handle" title="Resize"></div>
+                <button class="loc-del-patch loc-handle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             `;
@@ -156,23 +118,14 @@ export async function renderOverlays() {
         cardConfig.texts.forEach(t => {
             const isActive = t.id === state.activeTextId;
             const div = document.createElement('div');
-            div.className = 'loc-text-overlay';
+            div.className = 'loc-text-overlay' + (isActive ? ' is-active' : '');
             div.dataset.id = t.id;
-            div.style.position = 'absolute';
+            // Dynamic position/size only
             div.style.left = t.x + '%';
             div.style.top = t.y + '%';
             div.style.width = t.width + '%';
             div.style.height = t.height + '%';
             div.style.transform = `rotate(${t.rotation || 0}deg)`;
-            div.style.border = 'none';
-            div.style.outline = isActive ? '2px solid #007bff' : '2px dashed #007bff';
-            div.style.boxShadow = isActive ? '0 0 10px rgba(0, 123, 255, 0.5)' : 'none';
-            div.style.zIndex = isActive ? '20' : '10';
-            div.style.pointerEvents = 'auto';
-            div.style.boxSizing = 'content-box';
-            div.style.transformOrigin = '0 0';
-            div.style.position = 'absolute';
-            div.style.overflow = 'visible';
 
             const font = state.config.fonts[t.fontId];
             const fontFamily = font ? font.family : 'sans-serif';
@@ -188,8 +141,6 @@ export async function renderOverlays() {
             const pxH = (t.height / 100) * canvasH;
             const shrunkSize = getShrunkFontSize(els.ctx, textContent, font, pxW, pxH);
 
-            const handleDisplay = isActive ? 'flex' : 'none';
-
             // Build tooltip for other languages
             const otherLangs = state.config.languages.filter(l => l !== lang);
             let tooltipText = "Translations:\n";
@@ -203,19 +154,16 @@ export async function renderOverlays() {
             if (!hasOtherTexts) tooltipText += "No translations yet.";
 
             div.innerHTML = `
-                <div class="loc-drag-handle loc-handle" style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:#007bff; border-radius:50%; cursor:grab; z-index:10; display:${isActive?'block':'none'};" title="Drag"></div>
-                <div class="loc-rotate-handle loc-handle" style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:20px; height:20px; background:orange; border-radius:50%; cursor:crosshair; z-index:10; display:${isActive?'block':'none'};" title="Rotate"></div>
-                <div class="loc-resize-handle loc-handle" style="position:absolute; bottom:-10px; right:-10px; width:20px; height:20px; background:blue; border-radius:50%; cursor:nwse-resize; z-index:10; display:${isActive?'block':'none'};" title="Resize"></div>
-
-                <div class="loc-info-icon loc-handle" style="position:absolute; top:-10px; right:15px; width:20px; height:20px; background:#17a2b8; color:white; border-radius:50%; display:${handleDisplay}; align-items:center; justify-content:center; cursor:help; z-index:10;" title="${tooltipText.replace(/"/g, '&quot;')}">
+                <div class="loc-drag-handle loc-handle" title="Drag"></div>
+                <div class="loc-rotate-handle loc-handle" title="Rotate"></div>
+                <div class="loc-resize-handle loc-handle" title="Resize"></div>
+                <div class="loc-info-icon loc-handle" title="${tooltipText.replace(/"/g, '&quot;')}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </div>
-
-                <button class="loc-del-text loc-handle" style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:red; color:white; border:none; border-radius:50%; cursor:pointer; z-index:10; display:${isActive?'flex':'none'}; align-items:center; justify-content:center; padding:0;">
+                <button class="loc-del-text loc-handle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
-
-                <textarea style="position:absolute; top:0; left:0; width:100%; height:100%; resize:none; background:transparent; border:none; outline:none; font-family:'${fontFamily}', sans-serif; font-size:${shrunkSize}px; color:transparent; caret-color:#007bff; text-align:${taAlign}; box-sizing:border-box; padding:0; margin:0; line-height:1.2; overflow:hidden; font-style:${fontStyle}; font-weight:400; white-space:pre-wrap; word-wrap:break-word;">${textContent}</textarea>
+                <textarea class="loc-overlay-textarea" style="font-family:'${fontFamily}', sans-serif; font-size:${shrunkSize}px; text-align:${taAlign}; font-style:${fontStyle};">${textContent}</textarea>
             `;
 
             const ta = div.querySelector('textarea');

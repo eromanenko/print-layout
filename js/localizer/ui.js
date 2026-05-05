@@ -237,21 +237,7 @@ export function updateLanguagesUI() {
     state.config.languages.forEach(lang => {
         const isActive = state.config.currentLang === lang;
         const pill = document.createElement('div');
-        pill.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: ${isActive ? '#007bff' : '#f1f5f9'};
-            color: ${isActive ? '#fff' : '#475569'};
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid ${isActive ? '#007bff' : '#e2e8f0'};
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        `;
+        pill.className = 'loc-lang-pill' + (isActive ? ' is-active' : '');
 
         const label = document.createElement('span');
         label.textContent = lang.toUpperCase();
@@ -260,7 +246,7 @@ export function updateLanguagesUI() {
         if (state.config.languages.length > 1) {
             const delBtn = document.createElement('span');
             delBtn.innerHTML = '&times;';
-            delBtn.style.cssText = `cursor: pointer; font-size: 18px; line-height: 1; color: ${isActive ? 'rgba(255,255,255,0.7)' : '#94a3b8'}; margin-left: 4px;`;
+            delBtn.className = 'loc-lang-pill-del';
             delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 handleRemoveLanguage(lang);
