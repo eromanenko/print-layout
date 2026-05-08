@@ -17,8 +17,16 @@ export function setActiveText(id) {
     autosaveConfig();
     state.activeTextId = id;
     state.activePatchId = null;
+    els.patchMode.style.display = 'none';
     els.patchColorBtn.style.display = 'none';
+    els.patchBlurSlider.style.display = 'none';
     els.colorPaletteModal.style.display = 'none';
+    
+    if (id) {
+        els.textAlignGroup.style.display = 'flex';
+    } else {
+        els.textAlignGroup.style.display = 'none';
+    }
 
     updateOverlaysVisualState();
     updateFontsList();
@@ -29,19 +37,27 @@ export function setActivePatch(id) {
     autosaveConfig();
     state.activePatchId = id;
     state.activeTextId = null;
+    els.textAlignGroup.style.display = 'none';
 
     if (id) {
-        els.patchColorBtn.style.display = 'block';
+        els.patchMode.style.display = 'block';
         const cardConfig = state.config.cards[state.images[state.currentIndex].name];
         if (cardConfig && cardConfig.patches) {
             const patch = cardConfig.patches.find(p => p.id === id);
             if (patch) {
+                els.patchMode.value = patch.mode || 'solid';
+                els.patchColorBtn.style.display = (patch.mode === 'solid' || !patch.mode) ? 'block' : 'none';
+                els.patchBlurSlider.style.display = patch.mode === 'blur' ? 'block' : 'none';
+                
                 els.patchColorBtn.style.background = patch.color || '#ffffff';
                 els.patchColorPicker.value = patch.color || '#ffffff';
+                els.patchBlurSlider.value = patch.blurRadius || 8;
             }
         }
     } else {
+        els.patchMode.style.display = 'none';
         els.patchColorBtn.style.display = 'none';
+        els.patchBlurSlider.style.display = 'none';
         els.colorPaletteModal.style.display = 'none';
     }
 
@@ -74,8 +90,12 @@ export async function renderOverlays() {
     if (cardConfig.patches) {
         cardConfig.patches.forEach(p => {
             const isActive = p.id === state.activePatchId;
+            const mode = p.mode || 'solid';
             const div = document.createElement('div');
             div.className = 'loc-patch-overlay' + (isActive ? ' is-active' : '');
+            if (mode === 'blur') div.classList.add('is-blur-mode');
+            if (mode === 'clone') div.classList.add('is-clone-mode');
+
             div.dataset.id = p.id;
             // Dynamic position/size only
             div.style.left = p.x + '%';
@@ -83,6 +103,15 @@ export async function renderOverlays() {
             div.style.width = p.width + '%';
             div.style.height = p.height + '%';
             div.style.transform = `rotate(${p.rotation || 0}deg)`;
+
+            if (mode === 'blur') {
+                div.style.backdropFilter = `blur(${p.blurRadius || 8}px)`;
+                div.style.backgroundColor = 'transparent';
+                if (isActive) div.style.border = '1px dashed rgba(0,0,0,0.3)';
+            } else if (mode === 'clone') {
+                div.style.backgroundColor = 'transparent';
+                if (isActive) div.style.border = '1px dashed rgba(0,0,0,0.5)';
+            }
 
             div.innerHTML = `
                 <div class="loc-patch-selector" title="Select patch"></div>
@@ -110,6 +139,63 @@ export async function renderOverlays() {
 
             setupOverlayInteraction(div, p);
             els.overlaysContainer.appendChild(div);
+
+            // Render the clone handle globally if this patch is active and in clone mode
+            if (mode === 'clone' && isActive) {
+                const cloneHandle = document.createElement('div');
+                cloneHandle.id = `loc-clone-handle-${p.id}`;
+                cloneHandle.className = 'loc-clone-source-handle is-active';
+                cloneHandle.title = 'Clone Source';
+                
+                const patchCenterX = p.x + p.width / 2;
+                const patchCenterY = p.y + p.height / 2;
+                cloneHandle.style.left = (patchCenterX + (p.cloneDx || 0)) + '%';
+                cloneHandle.style.top = (patchCenterY + (p.cloneDy || 0)) + '%';
+                
+                cloneHandle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActivePatch(p.id);
+                    
+                    let startX = e.clientX;
+                    let startY = e.clientY;
+                    let startCloneDx = p.cloneDx || 0;
+                    let startCloneDy = p.cloneDy || 0;
+
+                    const onCloneMove = (me) => {
+                        const scale = state.currentScale || 1;
+                        const cardRot = state.images[state.currentIndex].rotation || 0;
+                        let dx = (me.clientX - startX) / scale;
+                        let dy = (me.clientY - startY) / scale;
+
+                        const rad = -cardRot * Math.PI / 180;
+                        const adjustedDx = dx * Math.cos(rad) - dy * Math.sin(rad);
+                        const adjustedDy = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+                        p.cloneDx = startCloneDx + (adjustedDx / els.canvas.width) * 100;
+                        p.cloneDy = startCloneDy + (adjustedDy / els.canvas.height) * 100;
+
+                        const currentPatchCenterX = p.x + p.width / 2;
+                        const currentPatchCenterY = p.y + p.height / 2;
+
+                        cloneHandle.style.left = (currentPatchCenterX + p.cloneDx) + '%';
+                        cloneHandle.style.top = (currentPatchCenterY + p.cloneDy) + '%';
+                        
+                        redrawCanvas();
+                    };
+
+                    const onCloneUp = () => {
+                        document.removeEventListener('mousemove', onCloneMove);
+                        document.removeEventListener('mouseup', onCloneUp);
+                        autosaveConfig();
+                    };
+
+                    document.addEventListener('mousemove', onCloneMove);
+                    document.addEventListener('mouseup', onCloneUp);
+                });
+                
+                els.overlaysContainer.appendChild(cloneHandle);
+            }
         });
     }
 
@@ -175,7 +261,10 @@ export async function renderOverlays() {
             });
             ta.addEventListener('blur', () => autosaveConfig());
             ta.addEventListener('focus', () => setActiveText(t.id));
-            div.addEventListener('mousedown', () => setActiveText(t.id));
+            div.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                setActiveText(t.id);
+            });
 
             div.querySelector('.loc-del-text').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -277,11 +366,23 @@ export function setupOverlayInteraction(el, t) {
             t.y = startTop + (adjustedDy / els.canvas.height) * 100;
             el.style.left = t.x + '%';
             el.style.top = t.y + '%';
+            
+            const cloneHandle = document.getElementById(`loc-clone-handle-${t.id}`);
+            if (cloneHandle) {
+                cloneHandle.style.left = (t.x + t.width / 2 + (t.cloneDx || 0)) + '%';
+                cloneHandle.style.top = (t.y + t.height / 2 + (t.cloneDy || 0)) + '%';
+            }
         } else if (mode === 'resize') {
             t.width = Math.max(2, startW + (boxDx / els.canvas.width) * 100);
             t.height = Math.max(2, startH + (boxDy / els.canvas.height) * 100);
             el.style.width = t.width + '%';
             el.style.height = t.height + '%';
+            
+            const cloneHandle = document.getElementById(`loc-clone-handle-${t.id}`);
+            if (cloneHandle) {
+                cloneHandle.style.left = (t.x + t.width / 2 + (t.cloneDx || 0)) + '%';
+                cloneHandle.style.top = (t.y + t.height / 2 + (t.cloneDy || 0)) + '%';
+            }
         } else if (mode === 'rotate') {
             const dx2 = e.clientX - state.rotOriginX;
             const dy2 = e.clientY - state.rotOriginY;

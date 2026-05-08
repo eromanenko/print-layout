@@ -473,6 +473,106 @@
                 </div>
             </div>
 
+            <!-- Section 5: Eraser Tools -->
+            <div class="controls sidebar-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <b style="font-size: 14.4px;">5. Eraser Tools:</b>
+                    <button id="locAddPatchBtn"
+                        style="cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fd7e14; color: white; border: none; border-radius: 4px; padding: 0 10px; height: 24px;"
+                        title="Add Eraser Patch">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" style="margin-right: 2px;">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="locPatchMode" style="display: none; flex: 1; padding: 0 4px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: pointer; height: 30px; font-size: 13px;">
+                        <option value="solid">Solid Color</option>
+                        <option value="blur">Blur Background</option>
+                        <option value="clone">Clone Stamp</option>
+                    </select>
+                    <div style="position: relative; display: flex; align-items: center; gap: 5px;">
+                        <div id="locPatchColorBtn"
+                            style="cursor: pointer; width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 4px; display: none; background: #ffffff;"
+                            title="Patch Color Palette"></div>
+                        <input type="color" id="locPatchColorPicker" style="display: none;">
+                        <input type="range" id="locPatchBlurSlider" min="1" max="40" value="8" style="display: none; width: 100px;" title="Blur Radius">
+                        
+                        <div id="locColorPaletteModal"
+                            style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="font-weight: bold; font-size: 14px;">Recent Colors</div>
+                                <button id="locClosePaletteBtn"
+                                    style="background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; padding: 0;"
+                                    title="Close">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="locPaletteColors"
+                                style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 25px;">
+                            </div>
+                            <button id="locPalettePickNewBtn"
+                                style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Pick Custom Color
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Text Tools -->
+            <div class="controls sidebar-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <b style="font-size: 14.4px;">6. Text Tools:</b>
+                    <button id="locAddTextBtn" title="Add Translated Text (+A)"
+                        style="cursor: pointer; background: #28a745; color: white; border: none; padding: 0 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 24px;">
+                        <span style="font-weight: bold; font-size: 14px; display: flex; align-items: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round" style="margin-right: 1px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            A
+                        </span>
+                    </button>
+                </div>
+                <div id="locTextAlignGroup" style="display: none; align-items: center; justify-content: flex-start; background: white; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; width: max-content;">
+                    <button id="locAlignLeftBtn" title="Align Left"
+                        style="cursor: pointer; background: white; border: none; padding: 0 10px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333; height: 30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+                    </button>
+                    <button id="locAlignCenterBtn" title="Align Center"
+                        style="cursor: pointer; background: white; border: none; padding: 0 10px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333; height: 30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="10" x2="6" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="18" y1="18" x2="6" y2="18"></line></svg>
+                    </button>
+                    <button id="locAlignRightBtn" title="Align Right"
+                        style="cursor: pointer; background: white; border: none; padding: 0 10px; display: flex; align-items: center; color: #333; height: 30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+
             <span id="locExportStatus"
                 style="font-size: 0.85em; color: #666; text-align: center; display: none; margin-top: -10px;"></span>
 
@@ -495,105 +595,6 @@
 
                     <!-- Navigation Controls -->
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <div id="locPatchColorBtn"
-                                style="cursor: pointer; width: 30px; height: 30px; border: 2px solid #ccc; border-radius: 4px; display: none; background: #ffffff;"
-                                title="Patch Color Palette"></div>
-                            <input type="color" id="locPatchColorPicker" style="display: none;">
-                            <div id="locColorPaletteModal"
-                                style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <div style="font-weight: bold; font-size: 14px;">Recent Colors</div>
-                                    <button id="locClosePaletteBtn"
-                                        style="background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; padding: 0;"
-                                        title="Close">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div id="locPaletteColors"
-                                    style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 25px;">
-                                </div>
-                                <button id="locPalettePickNewBtn"
-                                    style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    Pick Custom Color
-                                </button>
-                            </div>
-                        </div>
-                        <button id="locAddPatchBtn"
-                            style="cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fd7e14; color: white; border: none; border-radius: 4px; padding: 0 10px;"
-                            title="Add Eraser Patch">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" style="margin-right: 2px;">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            </svg>
-                        </button>
-                        <div style="display: flex; align-items: center;">
-                            <button id="locAddTextBtn" title="Add Translated Text (+A)"
-                                style="cursor: pointer; background: #28a745; color: white; border: none; padding: 0 10px; border-right: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-weight: bold; font-size: 16px; display: flex; align-items: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                        stroke-linejoin="round" style="margin-right: 1px;">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    A
-                                </span>
-                            </button>
-                            <button id="locAlignLeftBtn" title="Align Left"
-                                style="cursor: pointer; background: white; border: none; padding: 0 8px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <line x1="17" y1="10" x2="3" y2="10"></line>
-                                    <line x1="21" y1="6" x2="3" y2="6"></line>
-                                    <line x1="21" y1="14" x2="3" y2="14"></line>
-                                    <line x1="17" y1="18" x2="3" y2="18"></line>
-                                </svg>
-                            </button>
-                            <button id="locAlignCenterBtn" title="Align Center"
-                                style="cursor: pointer; background: white; border: none; padding: 0 8px; border-right: 1px solid #ccc; display: flex; align-items: center; color: #333;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <line x1="18" y1="10" x2="6" y2="10"></line>
-                                    <line x1="21" y1="6" x2="3" y2="6"></line>
-                                    <line x1="21" y1="14" x2="3" y2="14"></line>
-                                    <line x1="18" y1="18" x2="6" y2="18"></line>
-                                </svg>
-                            </button>
-                            <button id="locAlignRightBtn" title="Align Right"
-                                style="cursor: pointer; background: white; border: none; padding: 0 8px; display: flex; align-items: center; color: #333;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <line x1="21" y1="10" x2="7" y2="10"></line>
-                                    <line x1="21" y1="6" x2="3" y2="6"></line>
-                                    <line x1="21" y1="14" x2="3" y2="14"></line>
-                                    <line x1="21" y1="18" x2="7" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
-                        <div style="width: 5px;"></div>
                         <div style="display: flex; gap: 5px; height: 30px;">
                             <button id="locPrevBtn"
                                 style="cursor: pointer; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; color: #333;"

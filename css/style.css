@@ -469,6 +469,44 @@ button.tab-btn:hover:not(:disabled) {
     box-shadow: 0 0 10px rgba(253, 126, 20, 0.5);
     z-index: 15;
 }
+.loc-patch-overlay.is-active .loc-handle {
+    pointer-events: auto;
+}
+
+/* ── Clone Source Handle ───────────────────────── */
+.loc-clone-source-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    border: 2px dashed #ff0000;
+    border-radius: 50%;
+    cursor: move;
+    z-index: 25;
+    display: none;
+    pointer-events: none;
+}
+
+.loc-clone-source-handle.is-active {
+    display: block;
+    pointer-events: auto;
+}
+
+.loc-clone-source-handle::before,
+.loc-clone-source-handle::after {
+    content: '';
+    position: absolute;
+    background: #ff0000;
+}
+
+.loc-clone-source-handle::before {
+    top: 50%; left: -5px; right: -5px; height: 2px; transform: translateY(-50%);
+}
+
+.loc-clone-source-handle::after {
+    left: 50%; top: -5px; bottom: -5px; width: 2px; transform: translateX(-50%);
+}
 
 /* ── Overlay textarea ──────────────────────────── */
 .loc-overlay-textarea {

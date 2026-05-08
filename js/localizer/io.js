@@ -6,7 +6,7 @@
 
 import { showToast } from '../utils/toast.js';
 import { state, els } from './state.js';
-import { drawTextOnCanvas } from './renderer.js';
+import { drawTextOnCanvas, drawPatchOnCanvas } from './renderer.js';
 import { renderOverlays } from './overlays.js';
 import { injectFont, updateFontsList, updateLanguagesUI, setPlaceholderState,
          updateDeckControls, handleAddLanguage } from './ui.js';
@@ -275,8 +275,13 @@ export async function handleExportImages() {
             offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
             offCtx.drawImage(img, 0, 0);
             const cardConfig = state.config.cards[card.name];
-            if (cardConfig && cardConfig.texts) {
-                cardConfig.texts.forEach(t => drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height));
+            if (cardConfig) {
+                if (cardConfig.patches) {
+                    cardConfig.patches.forEach(p => drawPatchOnCanvas(offCtx, p, offCanvas.width, offCanvas.height, img));
+                }
+                if (cardConfig.texts) {
+                    cardConfig.texts.forEach(t => drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height));
+                }
             }
             const blob = await new Promise(res => offCanvas.toBlob(res, 'image/jpeg', 0.9));
             zip.file(card.name, blob);
@@ -316,8 +321,13 @@ export async function handleExportPdf() {
             offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
             offCtx.drawImage(img, 0, 0);
             const cardConfig = state.config.cards[card.name];
-            if (cardConfig && cardConfig.texts) {
-                cardConfig.texts.forEach(t => drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height));
+            if (cardConfig) {
+                if (cardConfig.patches) {
+                    cardConfig.patches.forEach(p => drawPatchOnCanvas(offCtx, p, offCanvas.width, offCanvas.height, img));
+                }
+                if (cardConfig.texts) {
+                    cardConfig.texts.forEach(t => drawTextOnCanvas(offCtx, t, offCanvas.width, offCanvas.height));
+                }
             }
             const blob = await new Promise(res => offCanvas.toBlob(res, 'image/jpeg', 1.0));
             const newName = card.name.replace(/\.[^/.]+$/, "") + ".jpg";

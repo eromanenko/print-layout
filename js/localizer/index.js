@@ -167,6 +167,38 @@ els.palettePickNewBtn.addEventListener('click', () => {
     els.patchColorPicker.click();
 });
 
+els.patchMode.addEventListener('change', (e) => {
+    if (state.activePatchId && state.images.length > 0) {
+        const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+        if (cardConfig && cardConfig.patches) {
+            const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
+            if (patch) {
+                patch.mode = e.target.value;
+                els.patchColorBtn.style.display = patch.mode === 'solid' ? 'block' : 'none';
+                els.patchBlurSlider.style.display = patch.mode === 'blur' ? 'block' : 'none';
+                renderOverlays();
+                redrawCanvas();
+                autosaveConfig();
+            }
+        }
+    }
+});
+
+els.patchBlurSlider.addEventListener('input', (e) => {
+    if (state.activePatchId && state.images.length > 0) {
+        const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+        if (cardConfig && cardConfig.patches) {
+            const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
+            if (patch && patch.mode === 'blur') {
+                patch.blurRadius = parseInt(e.target.value);
+                renderOverlays(); // update backdrop-filter live
+                redrawCanvas();
+                autosaveConfig();
+            }
+        }
+    }
+});
+
 els.patchColorPicker.addEventListener('input', (e) => {
     const newColor = e.target.value;
     
@@ -245,10 +277,18 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLanguagesUI();
 });
 
+els.workspace.addEventListener('mousedown', (e) => {
+    // If the click is on the background, not on an overlay (overlays stop propagation)
+    setActiveText(null);
+    setActivePatch(null);
+});
+
 function navigate(dir) {
     if (state.images.length === 0) return;
     
     autosaveConfig();
+    setActiveText(null);
+    setActivePatch(null);
     
     state.currentIndex += dir;
     
@@ -376,7 +416,11 @@ function handleAddPatch() {
         width: 40,
         height: 10,
         rotation: spawnRot,
-        color: els.patchColorPicker.value || '#ffffff'
+        mode: els.patchMode.value || 'solid',
+        color: els.patchColorPicker.value || '#ffffff',
+        blurRadius: parseInt(els.patchBlurSlider.value) || 8,
+        cloneDx: 10,
+        cloneDy: 0
     };
     
     state.config.cards[card.name].patches.push(newPatch);

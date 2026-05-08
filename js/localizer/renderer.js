@@ -22,7 +22,7 @@ export async function redrawCanvas() {
     if (cardConfig) {
         if (cardConfig.patches) {
             cardConfig.patches.forEach(p => {
-                drawPatchOnCanvas(els.ctx, p, els.canvas.width, els.canvas.height);
+                drawPatchOnCanvas(els.ctx, p, els.canvas.width, els.canvas.height, img);
             });
         }
         if (cardConfig.texts) {
@@ -33,17 +33,45 @@ export async function redrawCanvas() {
     }
 }
 
-export function drawPatchOnCanvas(ctx, p, canvasWidth, canvasHeight) {
+export function drawPatchOnCanvas(ctx, p, canvasWidth, canvasHeight, img) {
     const pxX = (p.x / 100) * canvasWidth;
     const pxY = (p.y / 100) * canvasHeight;
     const pxW = (p.width / 100) * canvasWidth;
     const pxH = (p.height / 100) * canvasHeight;
 
     ctx.save();
-    ctx.translate(pxX, pxY);
-    ctx.rotate((p.rotation || 0) * Math.PI / 180);
-    ctx.fillStyle = p.color || '#ffffff';
-    ctx.fillRect(0, 0, pxW, pxH);
+    const mode = p.mode || 'solid';
+    const rot = (p.rotation || 0) * Math.PI / 180;
+    
+    // Translate to center of patch for rotation
+    ctx.translate(pxX + pxW / 2, pxY + pxH / 2);
+    ctx.rotate(rot);
+
+    if (mode === 'solid') {
+        ctx.fillStyle = p.color || '#ffffff';
+        ctx.fillRect(-pxW / 2, -pxH / 2, pxW, pxH);
+    } else if ((mode === 'blur' || mode === 'clone') && img) {
+        ctx.beginPath();
+        ctx.rect(-pxW / 2, -pxH / 2, pxW, pxH);
+        ctx.clip();
+
+        if (mode === 'blur') {
+            ctx.filter = `blur(${p.blurRadius || 8}px)`;
+        }
+
+        ctx.rotate(-rot);
+        
+        let offsetX = 0;
+        let offsetY = 0;
+        if (mode === 'clone') {
+            offsetX = -((p.cloneDx || 0) / 100) * canvasWidth;
+            offsetY = -((p.cloneDy || 0) / 100) * canvasHeight;
+        }
+
+        ctx.translate(-(pxX + pxW / 2) + offsetX, -(pxY + pxH / 2) + offsetY);
+        ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+    }
+    
     ctx.restore();
 }
 
