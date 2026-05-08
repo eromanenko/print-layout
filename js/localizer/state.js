@@ -17,7 +17,10 @@ export const state = {
     activePatchId: null,
     fileHandle: null,
     editingFontName: null,
-    pendingUpload: null // { newImages, newConfig, conflicts }
+    pendingUpload: null, // { newImages, newConfig, conflicts }
+    inpaintCache: {}, // { patchId: OffscreenCanvas or HTMLCanvasElement }
+    cvLoaded: false,
+    cvLoading: false
 };
 
 export const els = {
@@ -41,6 +44,9 @@ export const els = {
     addPatchBtn:           document.getElementById('locAddPatchBtn'),
     patchMode:             document.getElementById('locPatchMode'),
     patchBlurSlider:       document.getElementById('locPatchBlurSlider'),
+    patchInpaintSensitivity: document.getElementById('locPatchInpaintSensitivity'),
+    patchInpaintThickness:   document.getElementById('locPatchInpaintThickness'),
+    inpaintLoading:        document.getElementById('locInpaintLoading'),
     patchColorBtn:         document.getElementById('locPatchColorBtn'),
     patchColorPicker:      document.getElementById('locPatchColorPicker'),
     colorPaletteModal:     document.getElementById('locColorPaletteModal'),

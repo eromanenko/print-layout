@@ -70,6 +70,26 @@ export function drawPatchOnCanvas(ctx, p, canvasWidth, canvasHeight, img) {
 
         ctx.translate(-(pxX + pxW / 2) + offsetX, -(pxY + pxH / 2) + offsetY);
         ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+    } else if (mode === 'inpaint') {
+        const cached = state.inpaintCache[p.id];
+        if (cached) {
+            ctx.beginPath();
+            ctx.rect(-pxW / 2, -pxH / 2, pxW, pxH);
+            ctx.clip();
+            
+            ctx.rotate(-rot);
+            ctx.translate(-(pxX + pxW / 2), -(pxY + pxH / 2));
+            ctx.drawImage(cached.canvas, cached.x, cached.y);
+        } else {
+            // Draw placeholder loading state or just blur
+            ctx.beginPath();
+            ctx.rect(-pxW / 2, -pxH / 2, pxW, pxH);
+            ctx.clip();
+            ctx.filter = `blur(4px)`;
+            ctx.rotate(-rot);
+            ctx.translate(-(pxX + pxW / 2), -(pxY + pxH / 2));
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        }
     }
     
     ctx.restore();

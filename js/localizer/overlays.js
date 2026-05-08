@@ -9,6 +9,7 @@ import { redrawCanvas, getShrunkFontSize } from './renderer.js';
 import { updateFontsList } from './ui.js';
 // Circular import — safe because called only inside function bodies
 import { autosaveConfig } from './io.js';
+import { scheduleInpaint, invalidateInpaintCache, loadOpenCV } from './inpaint.js';
 
 // ── Active-element helpers ──────────────────────────────────
 
@@ -20,6 +21,8 @@ export function setActiveText(id) {
     els.patchMode.style.display = 'none';
     els.patchColorBtn.style.display = 'none';
     els.patchBlurSlider.style.display = 'none';
+    els.patchInpaintSensitivity.style.display = 'none';
+    els.patchInpaintThickness.style.display = 'none';
     els.colorPaletteModal.style.display = 'none';
     
     if (id) {
@@ -48,16 +51,22 @@ export function setActivePatch(id) {
                 els.patchMode.value = patch.mode || 'solid';
                 els.patchColorBtn.style.display = (patch.mode === 'solid' || !patch.mode) ? 'block' : 'none';
                 els.patchBlurSlider.style.display = patch.mode === 'blur' ? 'block' : 'none';
+                els.patchInpaintSensitivity.style.display = patch.mode === 'inpaint' ? 'block' : 'none';
+                els.patchInpaintThickness.style.display = patch.mode === 'inpaint' ? 'block' : 'none';
                 
                 els.patchColorBtn.style.background = patch.color || '#ffffff';
                 els.patchColorPicker.value = patch.color || '#ffffff';
                 els.patchBlurSlider.value = patch.blurRadius || 8;
+                els.patchInpaintSensitivity.value = patch.inpaintSensitivity || 50;
+                els.patchInpaintThickness.value = patch.inpaintThickness || 5;
             }
         }
     } else {
         els.patchMode.style.display = 'none';
         els.patchColorBtn.style.display = 'none';
         els.patchBlurSlider.style.display = 'none';
+        els.patchInpaintSensitivity.style.display = 'none';
+        els.patchInpaintThickness.style.display = 'none';
         els.colorPaletteModal.style.display = 'none';
     }
 
@@ -111,6 +120,17 @@ export async function renderOverlays() {
             } else if (mode === 'clone') {
                 div.style.backgroundColor = 'transparent';
                 if (isActive) div.style.border = '1px dashed rgba(0,0,0,0.5)';
+            } else if (mode === 'inpaint') {
+                div.style.backgroundColor = 'transparent';
+                if (isActive) div.style.border = '1px dashed rgba(0,0,0,0.5)';
+                
+                if (!state.inpaintCache[p.id]) {
+                    // Try to load OpenCV and run inpaint if not cached
+                    loadOpenCV().then(() => {
+                        const img = state.images[state.currentIndex].img;
+                        scheduleInpaint(p, img, els.canvas.width, els.canvas.height);
+                    }).catch(console.error);
+                }
             }
 
             div.innerHTML = `
@@ -392,11 +412,19 @@ export function setupOverlayInteraction(el, t) {
             el.style.transform = `rotate(${t.rotation}deg)`;
         }
 
+        if (t.mode === 'inpaint') {
+            invalidateInpaintCache(t.id);
+        }
+
         redrawCanvas();
     };
 
     const onUp = () => {
         mode = null;
+        if (t.mode === 'inpaint') {
+            const img = state.images[state.currentIndex].img;
+            scheduleInpaint(t, img, els.canvas.width, els.canvas.height);
+        }
         autosaveConfig();
         redrawCanvas();
         document.removeEventListener('mousemove', onMove);

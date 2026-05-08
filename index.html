@@ -498,6 +498,7 @@
                         <option value="solid">Solid Color</option>
                         <option value="blur">Blur Background</option>
                         <option value="clone">Clone Stamp</option>
+                        <option value="inpaint">Smart Erase</option>
                     </select>
                     <div style="position: relative; display: flex; align-items: center; gap: 5px;">
                         <div id="locPatchColorBtn"
@@ -505,6 +506,14 @@
                             title="Patch Color Palette"></div>
                         <input type="color" id="locPatchColorPicker" style="display: none;">
                         <input type="range" id="locPatchBlurSlider" min="1" max="40" value="8" style="display: none; width: 100px;" title="Blur Radius">
+                        <input type="range" id="locPatchInpaintSensitivity" min="10" max="200" value="50" style="display: none; width: 60px;" title="Text Sensitivity (Lower = more edges)">
+                        <input type="range" id="locPatchInpaintThickness" min="1" max="15" value="5" style="display: none; width: 60px;" title="Thickness (Dilation radius)">
+                        
+                        <!-- Spinner for OpenCV loading -->
+                        <div id="locInpaintLoading" style="display: none; width: 20px; height: 20px; border: 2px solid #ccc; border-top-color: #007bff; border-radius: 50%; animation: loc-spin 1s linear infinite;" title="Loading Smart Erase Engine..."></div>
+                        <style>
+                            @keyframes loc-spin { 100% { transform: rotate(360deg); } }
+                        </style>
                         
                         <div id="locColorPaletteModal"
                             style="display: none; position: absolute; top: 40px; left: 0; z-index: 100; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; cursor: default;">

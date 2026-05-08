@@ -4,6 +4,7 @@ import { redrawCanvas, drawPatchOnCanvas, getShrunkFontSize, calculateWordWrap, 
 import { setActiveText, setActivePatch, updateOverlaysVisualState, renderOverlays, setupOverlayInteraction } from './overlays.js';
 import { setPlaceholderState, updateFontsList, updateLanguagesUI, handleAddLanguage, injectFont, resetFontForm, updatePreviewStyle, handleViewConfig, renderPaletteModal, replaceAllPatchColors, updateDeckManagerBadges, updateDeckControls } from './ui.js';
 import { autosaveConfig, saveConfigToFile, loadConfigFromFile, handleFilesUpload, finalizeAppendUpload, handleExportProject, handleExportImages, handleExportPdf, handleDownloadCsvTemplate, handleDownloadXlsxTemplate, handleTableImport, handleExportCsvTable, handleExportXlsxTable } from './io.js';
+import { loadOpenCV, scheduleInpaint, invalidateInpaintCache } from './inpaint.js';
 
 
 // Listeners
@@ -176,6 +177,23 @@ els.patchMode.addEventListener('change', (e) => {
                 patch.mode = e.target.value;
                 els.patchColorBtn.style.display = patch.mode === 'solid' ? 'block' : 'none';
                 els.patchBlurSlider.style.display = patch.mode === 'blur' ? 'block' : 'none';
+                els.patchInpaintSensitivity.style.display = patch.mode === 'inpaint' ? 'block' : 'none';
+                els.patchInpaintThickness.style.display = patch.mode === 'inpaint' ? 'block' : 'none';
+                
+                if (patch.mode === 'inpaint') {
+                    loadOpenCV().then(() => {
+                        const img = state.images[state.currentIndex].img;
+                        scheduleInpaint(patch, img, els.canvas.width, els.canvas.height);
+                    }).catch(err => {
+                        showToast(err.message, "error");
+                        patch.mode = 'solid';
+                        els.patchMode.value = 'solid';
+                        els.patchInpaintSensitivity.style.display = 'none';
+                        els.patchInpaintThickness.style.display = 'none';
+                        els.patchColorBtn.style.display = 'block';
+                    });
+                }
+                
                 renderOverlays();
                 redrawCanvas();
                 autosaveConfig();
@@ -198,6 +216,24 @@ els.patchBlurSlider.addEventListener('input', (e) => {
         }
     }
 });
+
+function handleInpaintSliderChange(e, propName) {
+    if (state.activePatchId && state.images.length > 0) {
+        const cardConfig = state.config.cards[state.images[state.currentIndex].name];
+        if (cardConfig && cardConfig.patches) {
+            const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
+            if (patch && patch.mode === 'inpaint') {
+                patch[propName] = parseInt(e.target.value);
+                const img = state.images[state.currentIndex].img;
+                scheduleInpaint(patch, img, els.canvas.width, els.canvas.height);
+                autosaveConfig();
+            }
+        }
+    }
+}
+
+els.patchInpaintSensitivity.addEventListener('input', (e) => handleInpaintSliderChange(e, 'inpaintSensitivity'));
+els.patchInpaintThickness.addEventListener('input', (e) => handleInpaintSliderChange(e, 'inpaintThickness'));
 
 els.patchColorPicker.addEventListener('input', (e) => {
     const newColor = e.target.value;
