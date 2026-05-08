@@ -689,14 +689,14 @@
         </div>
     </div>
 
-    <!-- Import Table Modal -->
+    <!-- Import / Export Table Modal -->
     <div id="locImportModal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div
             style="background: white; width: 500px; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             <div
                 style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; color: #333;">Import from CSV / XLSX</h3>
+                <h3 style="margin: 0; color: #333;">Import / Export Texts</h3>
                 <button id="locCloseImportModal"
                     style="background: transparent; border: none; color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -707,62 +707,104 @@
                 </button>
             </div>
 
+            <div style="display: flex; border-bottom: 1px solid #ddd; background: #f1f3f5;">
+                <button id="locTabImportBtn" style="flex: 1; padding: 10px; background: white; border: none; border-bottom: 2px solid #007bff; font-weight: bold; cursor: pointer; color: #007bff;">Import</button>
+                <button id="locTabExportBtn" style="flex: 1; padding: 10px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #666; cursor: pointer;">Export</button>
+            </div>
+
             <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-                <div
-                    style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; font-size: 13px; color: #3730a3; line-height: 1.5;">
-                    <b style="display: block; margin-bottom: 4px;">Table Structure:</b>
-                    • Column 1: Image filename (e.g. <code>card_01.jpg</code>)<br>
-                    • Column 2: <b>Font Style Number</b> (1, 2, ...)<br>
-                    • Row 1 Header: Language codes (e.g. <code>en</code>, <code>ua</code>, <code>ru</code>)<br>
-                    • Multiple rows for same file = Multiple text blocks
-                </div>
-
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="locDownloadCsvTemplate" class="loc-secondary-btn"
-                        style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Sample CSV
-                    </button>
-                    <button id="locDownloadXlsxTemplate" class="loc-secondary-btn"
-                        style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Sample XLSX
-                    </button>
-                </div>
-
-                <div id="locImportDropzone"
-                    style="height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;"
-                    onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9'"
-                    onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        style="color: #64748b;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <div style="text-align: center;">
-                        <div style="font-weight: 500; color: #1e293b;">Click or drag file to import</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Supports .csv and .xlsx</div>
+                <!-- IMPORT TAB CONTENT -->
+                <div id="locImportTabContent" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div
+                        style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; font-size: 13px; color: #3730a3; line-height: 1.5;">
+                        <b style="display: block; margin-bottom: 4px;">Table Structure:</b>
+                        • <code>filename</code> (e.g. card_01.jpg), <code>font</code> (1, 2, ...)<br>
+                        • Optional: <code>x</code>, <code>y</code>, <code>width</code>, <code>height</code>, <code>rotation</code><br>
+                        • Language codes: <code>en</code>, <code>ua</code>, <code>ru</code>, etc.
                     </div>
-                    <input type="file" id="locTableFileInput" accept=".csv,.xlsx" style="display: none;">
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="locDownloadCsvTemplate" class="loc-secondary-btn"
+                            style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Sample CSV
+                        </button>
+                        <button id="locDownloadXlsxTemplate" class="loc-secondary-btn"
+                            style="padding: 6px 12px; font-size: 12px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #333;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Sample XLSX
+                        </button>
+                    </div>
+
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; cursor: pointer;">
+                        <input type="checkbox" id="locImportReplaceTexts"> Replace existing texts on card
+                    </label>
+
+                    <div id="locImportDropzone"
+                        style="height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;"
+                        onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9'"
+                        onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="color: #64748b;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div style="text-align: center;">
+                            <div style="font-weight: 500; color: #1e293b;">Click or drag file to import</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Supports .csv and .xlsx</div>
+                        </div>
+                        <input type="file" id="locTableFileInput" accept=".csv,.xlsx" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- EXPORT TAB CONTENT -->
+                <div id="locExportTabContent" style="display: none; flex-direction: column; gap: 15px;">
+                    <div
+                        style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; font-size: 13px; color: #3730a3; line-height: 1.5;">
+                        Export all localized texts to a table for translators. Coordinates and rotation will be included.
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                        <button id="locExportCsvBtn" class="loc-secondary-btn"
+                            style="padding: 10px 16px; font-size: 14px; background: #007bff; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: white; font-weight: bold;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export CSV
+                        </button>
+                        <button id="locExportXlsxBtn" class="loc-secondary-btn"
+                            style="padding: 10px 16px; font-size: 14px; background: #28a745; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: white; font-weight: bold;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export XLSX
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div
                 style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: flex-end;">
                 <button id="locCancelImport"
-                    style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Cancel</button>
+                    style="padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 14px;">Close</button>
             </div>
         </div>
     </div>

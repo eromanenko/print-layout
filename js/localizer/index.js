@@ -3,7 +3,7 @@ import { state, els } from './state.js';
 import { redrawCanvas, drawPatchOnCanvas, getShrunkFontSize, calculateWordWrap, drawTextOnCanvas } from './renderer.js';
 import { setActiveText, setActivePatch, updateOverlaysVisualState, renderOverlays, setupOverlayInteraction } from './overlays.js';
 import { setPlaceholderState, updateFontsList, updateLanguagesUI, handleAddLanguage, injectFont, resetFontForm, updatePreviewStyle, handleViewConfig, renderPaletteModal, replaceAllPatchColors, updateDeckManagerBadges, updateDeckControls } from './ui.js';
-import { autosaveConfig, saveConfigToFile, loadConfigFromFile, handleFilesUpload, finalizeAppendUpload, handleExportProject, handleExportImages, handleExportPdf, handleDownloadCsvTemplate, handleDownloadXlsxTemplate, handleTableImport } from './io.js';
+import { autosaveConfig, saveConfigToFile, loadConfigFromFile, handleFilesUpload, finalizeAppendUpload, handleExportProject, handleExportImages, handleExportPdf, handleDownloadCsvTemplate, handleDownloadXlsxTemplate, handleTableImport, handleExportCsvTable, handleExportXlsxTable } from './io.js';
 
 
 // Listeners
@@ -30,7 +30,7 @@ els.closeDeckManagerBtn.addEventListener('click', () => els.deckManagerModal.sty
 document.getElementById('locCloseDeckManagerAlt').addEventListener('click', () => els.deckManagerModal.style.display = 'none');
 els.saveDeckOrderBtn.addEventListener('click', handleSaveDeckOrder);
 
-// Phase 8: Import Table Listeners
+// Phase 8 + 13: Import/Export Table Listeners
 els.importTableBtn.addEventListener('click', () => els.importModal.style.display = 'flex');
 els.closeImportModal.addEventListener('click', () => els.importModal.style.display = 'none');
 els.cancelImportBtn.addEventListener('click', () => els.importModal.style.display = 'none');
@@ -41,6 +41,30 @@ els.tableFileInput.addEventListener('change', (e) => {
     if (e.target.files[0]) handleTableImport(e.target.files[0]);
     e.target.value = '';
 });
+
+// Import/Export Tabs
+els.tabImportBtn.addEventListener('click', () => {
+    els.tabImportBtn.style.borderBottomColor = '#007bff';
+    els.tabImportBtn.style.color = '#007bff';
+    els.tabExportBtn.style.borderBottomColor = 'transparent';
+    els.tabExportBtn.style.color = '#666';
+    els.importTabContent.style.display = 'flex';
+    els.exportTabContent.style.display = 'none';
+});
+
+els.tabExportBtn.addEventListener('click', () => {
+    els.tabExportBtn.style.borderBottomColor = '#007bff';
+    els.tabExportBtn.style.color = '#007bff';
+    els.tabImportBtn.style.borderBottomColor = 'transparent';
+    els.tabImportBtn.style.color = '#666';
+    els.exportTabContent.style.display = 'flex';
+    els.importTabContent.style.display = 'none';
+});
+
+// Export Texts
+els.exportCsvBtn.addEventListener('click', handleExportCsvTable);
+els.exportXlsxBtn.addEventListener('click', handleExportXlsxTable);
+
 
 // Phase 11: Language Management Listeners
 els.addLangBtn.addEventListener('click', () => {

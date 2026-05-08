@@ -343,10 +343,10 @@ export async function handleExportPdf() {
 // ── Table import (CSV / XLSX) ────────────────────────────────
 
 export function handleDownloadCsvTemplate() {
-    const headers = ["filename", "font", ...state.config.languages];
+    const headers = ["filename", "font", "x", "y", "width", "height", "rotation", ...state.config.languages];
     const rows = [
-        ["card_01.jpg", "1", "Title in English", "Заголовок українською", "Заголовок на русском"],
-        ["card_01.jpg", "2", "Description in English", "Опис українською", "Описание на русском"]
+        ["card_01.jpg", "1", "10", "10", "80", "20", "0", "Title in English", "Заголовок українською", "Заголовок на русском"],
+        ["card_01.jpg", "2", "10", "40", "80", "50", "0", "Description in English", "Опис українською", "Описание на русском"]
     ];
     const csvContent = [headers, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -360,10 +360,10 @@ export function handleDownloadCsvTemplate() {
 
 export function handleDownloadXlsxTemplate() {
     if (!window.XLSX) return showToast("Excel library not loaded", "error");
-    const headers = ["filename", "font", ...state.config.languages];
+    const headers = ["filename", "font", "x", "y", "width", "height", "rotation", ...state.config.languages];
     const rows = [
-        ["card_01.jpg", "1", "Title in English", "Заголовок українською", "Заголовок на русском"],
-        ["card_01.jpg", "2", "Description in English", "Опис українською", "Описание на русском"]
+        ["card_01.jpg", "1", "10", "10", "80", "20", "0", "Title in English", "Заголовок українською", "Заголовок на русском"],
+        ["card_01.jpg", "2", "10", "40", "80", "50", "0", "Description in English", "Опис українською", "Описание на русском"]
     ];
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
@@ -393,8 +393,14 @@ export async function handleTableImport(file) {
         const fontIdx = headers.indexOf('font');
         if (filenameIdx === -1) return showToast("Column 'filename' not found in header", "error");
 
+        const xIdx = headers.indexOf('x');
+        const yIdx = headers.indexOf('y');
+        const wIdx = headers.indexOf('width');
+        const hIdx = headers.indexOf('height');
+        const rIdx = headers.indexOf('rotation');
+
         const langCols = {};
-        const reservedHeaders = ['filename', 'font'];
+        const reservedHeaders = ['filename', 'font', 'x', 'y', 'width', 'height', 'rotation'];
         for (let i = 0; i < headers.length; i++) {
             const h = headers[i];
             if (!h || reservedHeaders.includes(h)) continue;
@@ -413,6 +419,8 @@ export async function handleTableImport(file) {
         let importedCount = 0;
         const fileOffsets = {};
         const fontIds = Object.keys(state.config.fonts);
+        const clearedCards = new Set();
+        const replaceTexts = els.importReplaceTexts.checked;
 
         rows.forEach(row => {
             const fname = String(row[filenameIdx] || '').trim();
@@ -441,13 +449,27 @@ export async function handleTableImport(file) {
             if (!state.config.cards[card.name]) {
                 state.config.cards[card.name] = { texts: [] };
             }
+            if (replaceTexts && !clearedCards.has(card.name)) {
+                state.config.cards[card.name].texts = [];
+                clearedCards.add(card.name);
+            }
+
             const offsetCount = fileOffsets[card.name] || 0;
             const offset = offsetCount * 2;
+            
+            let tx = 5 + offset, ty = 5 + offset, tw = 40, th = 10, trot = 0;
+            if (xIdx !== -1 && row[xIdx] !== undefined && row[xIdx] !== "") tx = parseFloat(row[xIdx]);
+            if (yIdx !== -1 && row[yIdx] !== undefined && row[yIdx] !== "") ty = parseFloat(row[yIdx]);
+            if (wIdx !== -1 && row[wIdx] !== undefined && row[wIdx] !== "") tw = parseFloat(row[wIdx]);
+            if (hIdx !== -1 && row[hIdx] !== undefined && row[hIdx] !== "") th = parseFloat(row[hIdx]);
+            if (rIdx !== -1 && row[rIdx] !== undefined && row[rIdx] !== "") trot = parseFloat(row[rIdx]);
+
             state.config.cards[card.name].texts.push({
                 id: "txt_" + Math.random().toString(36).substr(2, 9),
                 fontId: selectedFontId,
-                x: 5 + offset, y: 5 + offset,
-                width: 40, height: 10,
+                x: tx, y: ty,
+                width: tw, height: th,
+                rotation: trot,
                 align: "left",
                 content: content
             });
@@ -492,4 +514,53 @@ function parseCsv(text) {
         currentRow.push(currentCell); rows.push(currentRow);
     }
     return rows;
+}
+
+function getTableDataForExport() {
+    const headers = ["filename", "font", "x", "y", "width", "height", "rotation", ...state.config.languages];
+    const rows = [];
+    const fontIds = Object.keys(state.config.fonts);
+
+    state.images.forEach(card => {
+        const config = state.config.cards[card.name];
+        if (config && config.texts && config.texts.length > 0) {
+            config.texts.forEach(txt => {
+                const fontIdx = fontIds.indexOf(txt.fontId) + 1;
+                const row = [
+                    card.name,
+                    fontIdx > 0 ? fontIdx : "",
+                    txt.x, txt.y, txt.width, txt.height, txt.rotation || 0
+                ];
+                state.config.languages.forEach(lang => {
+                    row.push(txt.content[lang] || "");
+                });
+                rows.push(row);
+            });
+        }
+    });
+    return { headers, rows };
+}
+
+export function handleExportCsvTable() {
+    const data = getTableDataForExport();
+    if (data.rows.length === 0) return showToast("No texts to export", "info");
+    const csvContent = [data.headers, ...data.rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "localized_texts.csv";
+    a.click();
+    showToast("CSV exported", "success");
+}
+
+export function handleExportXlsxTable() {
+    if (!window.XLSX) return showToast("Excel library not loaded", "error");
+    const data = getTableDataForExport();
+    if (data.rows.length === 0) return showToast("No texts to export", "info");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([data.headers, ...data.rows]);
+    XLSX.utils.book_append_sheet(wb, ws, "Translations");
+    XLSX.writeFile(wb, "localized_texts.xlsx");
+    showToast("XLSX exported", "success");
 }

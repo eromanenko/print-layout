@@ -107,6 +107,13 @@ export const els = {
     downloadXlsxBtn:       document.getElementById('locDownloadXlsxTemplate'),
     importDropzone:        document.getElementById('locImportDropzone'),
     tableFileInput:        document.getElementById('locTableFileInput'),
+    tabImportBtn:          document.getElementById('locTabImportBtn'),
+    tabExportBtn:          document.getElementById('locTabExportBtn'),
+    importTabContent:      document.getElementById('locImportTabContent'),
+    exportTabContent:      document.getElementById('locExportTabContent'),
+    importReplaceTexts:    document.getElementById('locImportReplaceTexts'),
+    exportCsvBtn:          document.getElementById('locExportCsvBtn'),
+    exportXlsxBtn:         document.getElementById('locExportXlsxBtn'),
 
     // Language Management
     langList:              document.getElementById('locLangList'),
