@@ -160,7 +160,7 @@ export function drawTextOnCanvas(ctx, t, canvasWidth, canvasHeight) {
     const lineHeight = fontSize * 1.2;
     const align = t.align || 'center';
     ctx.textAlign = align;
-    let currentY = 0;
+    let currentY = (fontSize * 1.2 - fontSize) / 2; // Shift down by half-leading to match HTML textarea
 
     lines.forEach(line => {
         let textX = 0;
