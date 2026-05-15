@@ -182,7 +182,7 @@ els.patchMode.addEventListener('change', (e) => {
                 
                 if (patch.mode === 'inpaint') {
                     loadOpenCV().then(() => {
-                        const img = state.images[state.currentIndex].img;
+                        const img = state.images[state.currentIndex].loadedImg;
                         scheduleInpaint(patch, img, els.canvas.width, els.canvas.height);
                     }).catch(err => {
                         showToast(err.message, "error");
@@ -224,7 +224,7 @@ function handleInpaintSliderChange(e, propName) {
             const patch = cardConfig.patches.find(p => p.id === state.activePatchId);
             if (patch && patch.mode === 'inpaint') {
                 patch[propName] = parseInt(e.target.value);
-                const img = state.images[state.currentIndex].img;
+                const img = state.images[state.currentIndex].loadedImg;
                 scheduleInpaint(patch, img, els.canvas.width, els.canvas.height);
                 autosaveConfig();
             }

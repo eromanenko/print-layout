@@ -56,16 +56,17 @@ export function loadOpenCV() {
     });
 }
 
-let inpaintTimeout = null;
+let inpaintTimeouts = {};
 
 export function scheduleInpaint(p, img, canvasW, canvasH) {
     if (!state.cvLoaded) return;
     
-    if (inpaintTimeout) clearTimeout(inpaintTimeout);
+    if (inpaintTimeouts[p.id]) clearTimeout(inpaintTimeouts[p.id]);
     
     // Debounce to prevent freezing UI during rapid changes
-    inpaintTimeout = setTimeout(() => {
+    inpaintTimeouts[p.id] = setTimeout(() => {
         runInpaint(p, img, canvasW, canvasH);
+        delete inpaintTimeouts[p.id];
     }, 300);
 }
 

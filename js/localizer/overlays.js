@@ -127,7 +127,7 @@ export async function renderOverlays() {
                 if (!state.inpaintCache[p.id]) {
                     // Try to load OpenCV and run inpaint if not cached
                     loadOpenCV().then(() => {
-                        const img = state.images[state.currentIndex].img;
+                        const img = state.images[state.currentIndex].loadedImg;
                         scheduleInpaint(p, img, els.canvas.width, els.canvas.height);
                     }).catch(console.error);
                 }
@@ -422,7 +422,7 @@ export function setupOverlayInteraction(el, t) {
     const onUp = () => {
         mode = null;
         if (t.mode === 'inpaint') {
-            const img = state.images[state.currentIndex].img;
+            const img = state.images[state.currentIndex].loadedImg;
             scheduleInpaint(t, img, els.canvas.width, els.canvas.height);
         }
         autosaveConfig();
