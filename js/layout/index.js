@@ -1,12 +1,14 @@
 import { initUI, updateLanguage, showWarning } from './ui.js';
 import { processFiles } from './files.js';
-import { processImageToCanvas, checkRatioMismatch } from './canvas.js';
-import { generatePDF } from './pdf.js';
+import { checkRatioMismatch } from './canvas.js';
 
 let loadedFaces = [];
 let loadedBacks = [];
 
+const APP_VERSION = '1.0.0';
+
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('appVersion').innerText = `v${APP_VERSION}`;
     initUI();
     
     const facesInput = document.getElementById('plFacesFileInput');
@@ -16,30 +18,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Config values
     const getNum = (id) => parseFloat(document.getElementById(id).value) || 0;
     
-    const getConfig = () => ({
-        pageSize: document.getElementById('plPageSize').value,
-        orientation: document.getElementById('plOrientation').value,
-        pageBgColor: document.getElementById('plPageBgColor').value,
-        cardWidth: getNum('plCardWidth'),
-        cardHeight: getNum('plCardHeight'),
-        margins: getNum('plPageMargins'),
-        gap: getNum('plCardGaps'),
-        backType: document.getElementById('plBackType').value,
-        front: {
-            bleedType: document.getElementById('plFrontBleedType').value,
-            bleedWidth: getNum('plFrontBleedWidth'),
-            bleedColor: document.getElementById('plFrontBleedColor').value,
-            cropMarks: document.getElementById('plFrontCropMarks').value,
-            cropColor: document.getElementById('plFrontCropColor').value
-        },
-        back: {
-            bleedType: document.getElementById('plBackBleedType').value,
-            bleedWidth: getNum('plBackBleedWidth'),
-            bleedColor: document.getElementById('plBackBleedColor').value,
-            cropMarks: document.getElementById('plBackCropMarks').value,
-            cropColor: document.getElementById('plBackCropColor').value
-        }
-    });
+    const getConfig = () => {
+        const cardW = getNum('plCardWidth');
+        const cardH = getNum('plCardHeight');
+        const foldMarginStr = document.getElementById('plFoldMargin').value;
+        const layoutMode = document.getElementById('plLayoutMode').value;
+        
+        return {
+            pageSize: document.getElementById('plPageSize').value,
+            orientation: document.getElementById('plOrientation').value,
+            pageBgColor: document.getElementById('plPageBgColor').value,
+            margins: parseFloat(document.getElementById('plPageMargins').value) || 0,
+            gap: parseFloat(document.getElementById('plCardGaps').value) || 0,
+            cardWidth: cardW,
+            cardHeight: cardH,
+            layoutMode: layoutMode,
+            foldMargin: (layoutMode === 'foldable-v' || layoutMode === 'foldable-h') ? (parseFloat(foldMarginStr) || 0) : 0,
+            backType: document.getElementById('plBackType').value,
+            front: {
+                bleedType: document.getElementById('plFrontBleedType').value,
+                bleedWidth: getNum('plFrontBleedWidth'),
+                bleedColor: document.getElementById('plFrontBleedColor').value,
+                cropMarks: document.getElementById('plFrontCropMarks').value,
+                cropColor: document.getElementById('plFrontCropColor').value
+            },
+            back: {
+                bleedType: document.getElementById('plBackBleedType').value,
+                bleedWidth: getNum('plBackBleedWidth'),
+                bleedColor: document.getElementById('plBackBleedColor').value,
+                cropMarks: document.getElementById('plBackCropMarks').value,
+                cropColor: document.getElementById('plBackCropColor').value
+            }
+        };
+    };
 
     const checkProportions = () => {
         const config = getConfig();
@@ -61,6 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let previousBackType = document.getElementById('plBackType').value;
     
+    document.getElementById('plLayoutMode').addEventListener('change', (e) => {
+        const isFoldable = e.target.value === 'foldable-v' || e.target.value === 'foldable-h';
+        document.getElementById('plFoldMarginContainer').style.display = isFoldable ? 'block' : 'none';
+    });
+
+    // Trigger change initially to set up correct visibility state
+    document.getElementById('plLayoutMode').dispatchEvent(new Event('change'));
+
     document.getElementById('plBackType').addEventListener('change', (e) => {
         const newType = e.target.value;
         if (previousBackType === newType) return;
@@ -314,9 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalCardH = cardH + 2 * maxBleedW;
         const gap = config.gap;
         const margins = config.margins;
+        const foldMargin = config.foldMargin;
+        const isFoldableV = config.layoutMode === 'foldable-v';
+        const isFoldableH = config.layoutMode === 'foldable-h';
+        const isFoldable = isFoldableV || isFoldableH;
         
-        const usableW = pageWidth - 2 * margins;
-        const usableH = pageHeight - 2 * margins;
+        const usableW = isFoldableV ? (pageWidth / 2) - margins - foldMargin : pageWidth - 2 * margins;
+        const usableH = isFoldableH ? (pageHeight / 2) - margins - foldMargin : pageHeight - 2 * margins;
         
         const cols = Math.floor((usableW + gap) / (totalCardW + gap));
         const rows = Math.floor((usableH + gap) / (totalCardH + gap));
@@ -328,8 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const gridW = cols * totalCardW + (cols - 1) * gap;
         const gridH = rows * totalCardH + (rows - 1) * gap;
-        const startX = (pageWidth - gridW) / 2;
-        const startY = (pageHeight - gridH) / 2;
+        const startX = isFoldableV ? (pageWidth / 2) - foldMargin - gridW : (pageWidth - gridW) / 2;
+        const startY = isFoldableH ? (pageHeight / 2) - foldMargin - gridH : (pageHeight - gridH) / 2;
 
         const createPage = (isBack) => {
             const wrapperDiv = document.createElement('div');
@@ -339,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapperDiv.style.gap = '10px';
 
             const title = document.createElement('h4');
-            title.innerText = isBack ? 'Page 2 (Backs)' : 'Page 1 (Fronts)';
+            title.innerText = isFoldable ? 'Page 1 (Foldable: Front & Back)' : (isBack ? 'Page 2 (Backs)' : 'Page 1 (Fronts)');
             title.style.margin = '0';
             title.style.fontFamily = 'sans-serif';
             title.style.color = '#333';
@@ -353,65 +376,199 @@ document.addEventListener('DOMContentLoaded', () => {
             pageDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
             pageDiv.style.overflow = 'hidden';
 
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svgOverlay = document.createElementNS(svgNS, 'svg');
+            svgOverlay.setAttribute('width', '100%');
+            svgOverlay.setAttribute('height', '100%');
+            svgOverlay.style.position = 'absolute';
+            svgOverlay.style.top = '0';
+            svgOverlay.style.left = '0';
+            svgOverlay.style.pointerEvents = 'none';
+            svgOverlay.style.zIndex = '20';
+            pageDiv.appendChild(svgOverlay);
+
+            if (isFoldableV) {
+                const foldLine = document.createElement('div');
+                foldLine.style.position = 'absolute';
+                foldLine.style.left = `${(pageWidth / 2) * scale}px`;
+                foldLine.style.top = '0';
+                foldLine.style.bottom = '0';
+                foldLine.style.width = '0';
+                foldLine.style.borderLeft = '1px dashed rgba(0,0,0,0.4)';
+                foldLine.style.zIndex = '10';
+                pageDiv.appendChild(foldLine);
+            } else if (isFoldableH) {
+                const foldLine = document.createElement('div');
+                foldLine.style.position = 'absolute';
+                foldLine.style.top = `${(pageHeight / 2) * scale}px`;
+                foldLine.style.left = '0';
+                foldLine.style.right = '0';
+                foldLine.style.height = '0';
+                foldLine.style.borderTop = '1px dashed rgba(0,0,0,0.4)';
+                foldLine.style.zIndex = '10';
+                pageDiv.appendChild(foldLine);
+            }
+
             const maxCards = cols * rows;
-            for(let i=0; i < Math.min(loadedFaces.length, maxCards); i++) {
-                const row = Math.floor(i / cols);
-                let col = i % cols;
+            
+            const renderGrid = (renderBacks) => {
+                for(let i=0; i < Math.min(loadedFaces.length, maxCards); i++) {
+                    const row = Math.floor(i / cols);
+                    const col = i % cols;
+
+                    let x = startX + col * (totalCardW + gap);
+                    let y = startY + row * (totalCardH + gap);
+                    
+                    if (renderBacks) {
+                        if (isFoldableV || !isFoldable) {
+                            x = pageWidth - x - totalCardW;
+                        }
+                        if (isFoldableH) {
+                            y = pageHeight - y - totalCardH;
+                        }
+                    }
+
+                    let imgSrc;
+                    if (renderBacks) {
+                        if (config.backType === 'same' && loadedBacks.length > 0) {
+                            imgSrc = loadedBacks[0].img.src;
+                        } else if (config.backType === 'different' && loadedBacks.length > 0) {
+                            imgSrc = (loadedBacks[i] || loadedBacks[0]).img.src;
+                        }
+                    } else {
+                        imgSrc = loadedFaces[i].img.src;
+                    }
+
+                    if (imgSrc) {
+                        const sideBleedType = renderBacks ? config.back.bleedType : config.front.bleedType;
+                        const sideBleedW = renderBacks ? backBleedW : frontBleedW;
+                        const sideBleedColor = renderBacks ? config.back.bleedColor : config.front.bleedColor;
+                        
+                        const drawW = cardW + 2 * sideBleedW;
+                        const drawH = cardH + 2 * sideBleedW;
+                        
+                        const offsetX = maxBleedW - sideBleedW;
+                        const offsetY = maxBleedW - sideBleedW;
+
+                        const cardImg = document.createElement('img');
+                        cardImg.src = imgSrc;
+                        cardImg.style.position = 'absolute';
+                        cardImg.style.left = `${(x + offsetX) * scale}px`;
+                        cardImg.style.top = `${(y + offsetY) * scale}px`;
+                        cardImg.style.width = `${drawW * scale}px`;
+                        cardImg.style.height = `${drawH * scale}px`;
+                        cardImg.style.objectFit = 'cover';
+                        
+                        if (isFoldableH && renderBacks) {
+                            cardImg.style.transform = 'rotate(180deg)';
+                        }
+                        
+                        if (sideBleedType === 'frame') {
+                            cardImg.style.border = `${sideBleedW * scale}px solid ${sideBleedColor}`;
+                            cardImg.style.boxSizing = 'border-box';
+                        }
+                        cardImg.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+                        pageDiv.appendChild(cardImg);
+                    }
+                }
+            };
+            
+            const drawCropMarks = (drawForBacks) => {
+                const sideConfig = drawForBacks ? config.back : config.front;
                 
-                if (isBack) {
-                    // Mirror column for back page print layout
-                    col = (cols - 1) - col; 
-                }
+                const lineLen = 3 * scale; 
+                const cropColor = sideConfig.cropColor;
+                
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        let cx = startX + col * (totalCardW + gap);
+                        let cy = startY + row * (totalCardH + gap);
+                        
+                        if (drawForBacks) {
+                            if (isFoldableV || !isFoldable) {
+                                cx = pageWidth - cx - totalCardW;
+                            }
+                            if (isFoldableH) {
+                                cy = pageHeight - cy - totalCardH;
+                            }
+                        }
+                        
+                        const cellX = cx * scale;
+                        const cellY = cy * scale;
 
-                const x = startX + col * (totalCardW + gap);
-                const y = startY + row * (totalCardH + gap);
+                        const left = cellX + maxBleedW * scale;
+                        const right = cellX + (totalCardW - maxBleedW) * scale;
+                        const top = cellY + maxBleedW * scale;
+                        const bottom = cellY + (totalCardH - maxBleedW) * scale;
+                        
+                        // Draw dashed trim line for all cards to show safe area
+                        const trimRect = document.createElementNS(svgNS, 'rect');
+                        trimRect.setAttribute('x', left);
+                        trimRect.setAttribute('y', top);
+                        trimRect.setAttribute('width', right - left);
+                        trimRect.setAttribute('height', bottom - top);
+                        trimRect.setAttribute('fill', 'none');
+                        trimRect.setAttribute('stroke', 'rgba(255, 0, 0, 0.4)');
+                        trimRect.setAttribute('stroke-width', '1');
+                        trimRect.setAttribute('stroke-dasharray', '4,4');
+                        svgOverlay.appendChild(trimRect);
 
-                let imgSrc;
-                if (isBack) {
-                    if (config.backType === 'same' && loadedBacks.length > 0) {
-                        imgSrc = loadedBacks[0].img.src;
-                    } else if (config.backType === 'different' && loadedBacks.length > 0) {
-                        imgSrc = (loadedBacks[i] || loadedBacks[0]).img.src;
+                        if (sideConfig.cropMarks === 'none') continue;
+
+                        const addLine = (x1, y1, x2, y2) => {
+                            const line = document.createElementNS(svgNS, 'line');
+                            line.setAttribute('x1', x1);
+                            line.setAttribute('y1', y1);
+                            line.setAttribute('x2', x2);
+                            line.setAttribute('y2', y2);
+                            line.setAttribute('stroke', cropColor);
+                            line.setAttribute('stroke-width', '1');
+                            svgOverlay.appendChild(line);
+                        };
+
+                        if (sideConfig.cropMarks === 'lines') {
+                            addLine(left, top - 1, left, top - 1 - lineLen);
+                            addLine(left - 1, top, left - 1 - lineLen, top);
+                            addLine(right, top - 1, right, top - 1 - lineLen);
+                            addLine(right + 1, top, right + 1 + lineLen, top);
+                            addLine(left, bottom + 1, left, bottom + 1 + lineLen);
+                            addLine(left - 1, bottom, left - 1 - lineLen, bottom);
+                            addLine(right, bottom + 1, right, bottom + 1 + lineLen);
+                            addLine(right + 1, bottom, right + 1 + lineLen, bottom);
+                        } else if (sideConfig.cropMarks === 'crosses') {
+                            const corners = [
+                                {x: left, y: top}, {x: right, y: top},
+                                {x: left, y: bottom}, {x: right, y: bottom}
+                            ];
+                            corners.forEach(c => {
+                                addLine(c.x - lineLen, c.y, c.x + lineLen, c.y);
+                                addLine(c.x, c.y - lineLen, c.x, c.y + lineLen);
+                            });
+                        }
                     }
-                } else {
-                    imgSrc = loadedFaces[i].img.src;
                 }
+            };
 
-                if (imgSrc) {
-                    const sideBleedType = isBack ? config.back.bleedType : config.front.bleedType;
-                    const sideBleedW = isBack ? backBleedW : frontBleedW;
-                    const sideBleedColor = isBack ? config.back.bleedColor : config.front.bleedColor;
-                    
-                    const drawW = cardW + 2 * sideBleedW;
-                    const drawH = cardH + 2 * sideBleedW;
-                    
-                    const offsetX = maxBleedW - sideBleedW;
-                    const offsetY = maxBleedW - sideBleedW;
-
-                    const cardImg = document.createElement('img');
-                    cardImg.src = imgSrc;
-                    cardImg.style.position = 'absolute';
-                    cardImg.style.left = `${(x + offsetX) * scale}px`;
-                    cardImg.style.top = `${(y + offsetY) * scale}px`;
-                    cardImg.style.width = `${drawW * scale}px`;
-                    cardImg.style.height = `${drawH * scale}px`;
-                    cardImg.style.objectFit = 'cover';
-                    if (sideBleedType === 'frame') {
-                        cardImg.style.border = `${sideBleedW * scale}px solid ${sideBleedColor}`;
-                        cardImg.style.boxSizing = 'border-box';
-                    }
-                    cardImg.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
-                    pageDiv.appendChild(cardImg);
+            // If standard, draw either front or back. If foldable, draw both front and back on the same page.
+            if (isFoldable) {
+                renderGrid(false); // Fronts
+                drawCropMarks(false);
+                if (config.backType !== 'none') {
+                    renderGrid(true); // Backs
+                    drawCropMarks(true);
                 }
+            } else {
+                renderGrid(isBack);
+                drawCropMarks(isBack);
             }
 
             wrapperDiv.appendChild(pageDiv);
             return wrapperDiv;
         };
 
-        previewContainer.appendChild(createPage(false)); // Front Page
-        if (config.backType !== 'none') {
-            previewContainer.appendChild(createPage(true));  // Back Page
+        previewContainer.appendChild(createPage(false)); // Front Page (or Foldable page)
+        if (!isFoldable && config.backType !== 'none') {
+            previewContainer.appendChild(createPage(true));  // Back Page for standard duplex
         }
     };
 
@@ -451,67 +608,189 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Recheck proportions and logic on inputs change
     const inputsToWatch = [
-        'plCardWidth', 'plCardHeight', 'plBackType', 'plPageSize', 
-        'plOrientation', 'plPageBgColor', 'plPageMargins', 'plCardGaps', 
-        'plFrontBleedType', 'plFrontBleedWidth', 'plFrontBleedColor',
-        'plFrontCropMarks', 'plFrontCropColor',
-        'plBackBleedType', 'plBackBleedWidth', 'plBackBleedColor',
-        'plBackCropMarks', 'plBackCropColor'
+        'plPageSize', 'plOrientation', 'plPageMargins', 'plCardGaps',
+        'plCardWidth', 'plCardHeight', 'plLayoutMode', 'plFoldMargin', 'plBackType',
+        'plFrontBleedWidth', 'plFrontBleedType', 'plFrontBleedColor', 'plFrontCropMarks', 'plFrontCropColor',
+        'plBackBleedWidth', 'plBackBleedType', 'plBackBleedColor', 'plBackCropMarks', 'plBackCropColor'
     ];
+    const presetSelect = document.getElementById('plCardPreset');
+    if (presetSelect) {
+        presetSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val) {
+                const [w, h] = val.split(',').map(Number);
+                document.getElementById('plCardWidth').value = w;
+                document.getElementById('plCardHeight').value = h;
+                updateAll();
+            }
+        });
+    }
+
     inputsToWatch.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', updateAll);
-        if (el && el.type === 'number') el.addEventListener('input', updateAll);
+        if (el && el.type === 'number') {
+            el.addEventListener('input', () => {
+                if ((id === 'plCardWidth' || id === 'plCardHeight') && presetSelect) {
+                    presetSelect.value = '';
+                }
+                updateAll();
+            });
+        }
     });
 
-    generateBtn.addEventListener('click', async () => {
+    generateBtn.addEventListener('click', () => {
         const config = getConfig();
         const status = document.getElementById('plStatus');
-        status.innerText = "Processing images...";
+        status.innerText = "Starting worker...";
         generateBtn.disabled = true;
         
         try {
-            // Target pixels at 300 DPI (300 dots per 25.4 mm)
-            const dpi = 300;
-            const pxPerMm = dpi / 25.4;
-            const frontBleedW = config.front.bleedType !== 'none' ? config.front.bleedWidth : 0;
-            const backBleedW = config.backType !== 'none' && config.back.bleedType !== 'none' ? config.back.bleedWidth : 0;
+            const worker = new Worker('js/layout/pdfWorker.js');
             
-            const processSide = (images, bleedConf, bleedW) => {
-                const targetW_px = Math.round((config.cardWidth + 2 * bleedW) * pxPerMm);
-                const targetH_px = Math.round((config.cardHeight + 2 * bleedW) * pxPerMm);
-                const settings = {
-                    type: bleedConf.bleedType,
-                    widthPx: Math.round(bleedW * pxPerMm),
-                    color: bleedConf.bleedColor
-                };
-                return images.map(img => processImageToCanvas(img, targetW_px, targetH_px, settings));
+            worker.onmessage = (e) => {
+                if (e.data.type === 'progress') {
+                    status.innerText = e.data.message;
+                } else if (e.data.type === 'done') {
+                    status.innerText = "Downloading...";
+                    const pdfBytes = e.data.payload;
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `print_layout_${Date.now()}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    status.innerText = "Done!";
+                    setTimeout(() => status.innerText = "", 3000);
+                    generateBtn.disabled = false;
+                    worker.terminate();
+                } else if (e.data.type === 'error') {
+                    console.error("Worker error:", e.data.error);
+                    alert("Error generating PDF: " + e.data.error);
+                    status.innerText = "Error";
+                    generateBtn.disabled = false;
+                    worker.terminate();
+                }
             };
-
-            const processedFaces = processSide(loadedFaces, config.front, frontBleedW);
-            const processedBacks = processSide(loadedBacks, config.back, backBleedW);
-
-            const pdfBytes = await generatePDF(processedFaces, processedBacks, config, (msg) => {
-                status.innerText = msg;
+            
+            worker.onerror = (err) => {
+                console.error("Worker fatal error:", err);
+                alert("Fatal error generating PDF.");
+                status.innerText = "Error";
+                generateBtn.disabled = false;
+                worker.terminate();
+            };
+            
+            const faceUrls = loadedFaces.map(f => f.img.src);
+            const backUrls = loadedBacks.map(b => b.img.src);
+            
+            worker.postMessage({
+                faces: faceUrls,
+                backs: backUrls,
+                config: config
             });
             
-            status.innerText = "Downloading...";
-            
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `print-layout-${new Date().getTime()}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            status.innerText = "Done!";
-            setTimeout(() => { status.innerText = ""; }, 3000);
-        } catch (err) {
-            console.error(err);
-            status.innerText = `Error: ${err.message}`;
+        } catch (e) {
+            console.error(e);
+            alert("Error starting worker: " + e.message);
+            status.innerText = "Error";
+            generateBtn.disabled = false;
         }
+    });
+    
+    // Save Config
+    document.getElementById('plSaveSettingsBtn').addEventListener('click', () => {
+        const currentConfig = {
+            version: APP_VERSION,
+            config: getConfig()
+        };
+        const json = JSON.stringify(currentConfig, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
         
-        generateBtn.disabled = false;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `print-layout-settings-v${APP_VERSION}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // Load Config
+    const loadInput = document.getElementById('plLoadSettingsInput');
+    document.getElementById('plLoadSettingsBtn').addEventListener('click', () => {
+        loadInput.click();
+    });
+
+    loadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (!data.version) {
+                    alert('Invalid config file format.');
+                    return;
+                }
+                if (data.version !== APP_VERSION) {
+                    const proceed = confirm(`Warning: Config version (${data.version}) does not match current app version (${APP_VERSION}). Some settings might not load correctly. Proceed?`);
+                    if (!proceed) return;
+                }
+                
+                const cfg = data.config;
+                if (!cfg) return;
+
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el && val !== undefined) el.value = val;
+                };
+
+                setVal('plPageSize', cfg.pageSize);
+                setVal('plOrientation', cfg.orientation);
+                setVal('plPageBgColor', cfg.pageBgColor);
+                setVal('plPageMargins', cfg.margins);
+                setVal('plCardGaps', cfg.gap);
+                setVal('plCardWidth', cfg.cardWidth);
+                setVal('plCardHeight', cfg.cardHeight);
+                setVal('plLayoutMode', cfg.layoutMode);
+                setVal('plFoldMargin', cfg.foldMargin);
+                setVal('plBackType', cfg.backType);
+                
+                if (cfg.front) {
+                    setVal('plFrontBleedType', cfg.front.bleedType);
+                    setVal('plFrontBleedWidth', cfg.front.bleedWidth);
+                    setVal('plFrontBleedColor', cfg.front.bleedColor);
+                    setVal('plFrontCropMarks', cfg.front.cropMarks);
+                    setVal('plFrontCropColor', cfg.front.cropColor);
+                }
+                
+                if (cfg.back) {
+                    setVal('plBackBleedType', cfg.back.bleedType);
+                    setVal('plBackBleedWidth', cfg.back.bleedWidth);
+                    setVal('plBackBleedColor', cfg.back.bleedColor);
+                    setVal('plBackCropMarks', cfg.back.cropMarks);
+                    setVal('plBackCropColor', cfg.back.cropColor);
+                }
+
+                // Trigger change events to update UI visibility
+                inputsToWatch.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.dispatchEvent(new Event('change'));
+                });
+
+            } catch (err) {
+                alert('Failed to parse settings file.');
+                console.error(err);
+            }
+            loadInput.value = '';
+        };
+        reader.readAsText(file);
     });
 });
