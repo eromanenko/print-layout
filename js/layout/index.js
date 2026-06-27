@@ -123,13 +123,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const config = getConfig();
         if (config.backType === 'different') {
             // Interleaved: Face, Back, Face, Back
-            for (let i = 0; i < newImages.length; i++) {
-                if (i % 2 === 0) loadedFaces.push(newImages[i]);
-                else loadedBacks.push(newImages[i]);
+            for (let i = 0; i < newImages.length; i += 2) {
+                const face = newImages[i];
+                const back = newImages[i + 1];
+                if (!face) break;
+                
+                const match = face.name.match(/[_\-\s]?[xX](\d+)\.[^.]+$/);
+                const count = match ? Math.max(1, parseInt(match[1], 10)) : 1;
+                
+                for (let j = 0; j < count; j++) {
+                    loadedFaces.push(face);
+                    if (back) loadedBacks.push(back);
+                }
             }
             document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} pairs loaded`;
         } else {
-            loadedFaces.push(...newImages);
+            for (const face of newImages) {
+                const match = face.name.match(/[_\-\s]?[xX](\d+)\.[^.]+$/);
+                const count = match ? Math.max(1, parseInt(match[1], 10)) : 1;
+                for (let j = 0; j < count; j++) {
+                    loadedFaces.push(face);
+                }
+            }
             document.getElementById('plFacesFileCount').innerText = `${loadedFaces.length} files loaded`;
         }
         
