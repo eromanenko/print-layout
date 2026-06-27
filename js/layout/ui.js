@@ -70,7 +70,7 @@ export function initUI() {
                 document.querySelector('.pl-side-tab[data-side="front"]').click();
             }
         }
-        updateLanguage();
+        updateLabels();
     });
 
     // Bleed sync logic
@@ -88,9 +88,7 @@ export function initUI() {
         isBleedSynced = false;
     });
 
-    // Translation logic
-    const langSelect = document.getElementById('plLangSelect');
-    langSelect.addEventListener('change', updateLanguage);
+
 
     // Initial check
     backType.dispatchEvent(new Event('change'));
@@ -107,36 +105,12 @@ export function initUI() {
     });
 }
 
-const translations = {
-    en: {
-        frontsSame: "Front Images (or ZIP):",
-        frontsDiff: "Images (Interleaved: Front, Back, Front... or ZIP):",
-        warnStretch: "⚠️ Warning: Image proportions do not match card size. Images will be stretched to fit.",
-        btnGenerate: "Generate PDF"
-    },
-    ru: {
-        frontsSame: "Изображения лиц (или ZIP):",
-        frontsDiff: "Изображения (Чередуются: Лицо, Рубашка... или ZIP):",
-        warnStretch: "⚠️ Внимание: Пропорции изображений не совпадают с заданным размером. Картинки будут растянуты.",
-        btnGenerate: "Создать PDF"
-    },
-    ua: {
-        frontsSame: "Зображення лиць (або ZIP):",
-        frontsDiff: "Зображення (Черегуються: Лице, Рубашка... або ZIP):",
-        warnStretch: "⚠️ Увага: Пропорції зображень не збігаються із заданим розміром. Картинки будуть розтягнуті.",
-        btnGenerate: "Згенерувати PDF"
-    }
-};
-
-export function updateLanguage() {
-    const lang = document.getElementById('plLangSelect').value;
-    const t = translations[lang];
-    if (!t) return;
-    
+export function updateLabels() {
     const backType = document.getElementById('plBackType').value;
-    document.getElementById('plFrontsLabel').innerText = backType === 'different' ? t.frontsDiff : t.frontsSame;
-    document.getElementById('plWarning').innerText = t.warnStretch;
-    document.getElementById('plGenerateBtn').innerText = t.btnGenerate;
+    const isDiff = backType === 'different';
+    document.getElementById('plFrontsLabel').innerText = isDiff ? 
+        "Images (Interleaved: Front, Back, Front... or ZIP):" : 
+        "Front Images (or ZIP):";
 }
 
 export function showWarning(show) {

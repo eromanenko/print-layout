@@ -1,11 +1,11 @@
-import { initUI, updateLanguage, showWarning } from './ui.js';
+import { initUI, updateLabels, showWarning } from './ui.js';
 import { processFiles } from './files.js';
 import { checkRatioMismatch } from './canvas.js';
 
 let loadedFaces = [];
 let loadedBacks = [];
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('appVersion').innerText = `v${APP_VERSION}`;
